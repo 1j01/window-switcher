@@ -21,7 +21,10 @@
 
 ; Improved version: hide all windows except those from the same process,
 ; then trigger Alt+Tab to switch between them.
-; TODO: just remove windows from task switcher, don't hide them
+; TODO: just remove windows from task switcher, not the task bar
+; Adding WS_EX_TOOLWINDOW is much faster than WinHide/WinShow (it makes the actual interaction instantaneous!),
+; but it still causes distracting animation in the taskbar.
+; Is there a less obtrusive way to remove windows from the task switcher?
 
 #MaxThreadsPerHotkey 2
 
@@ -59,7 +62,8 @@ FilteredWindowSwitcher() {
     }
     if !SameApp {
       if Switchable(Window) {
-        WinHide(Window)
+        ; WinHide(Window)
+        WinSetExStyle(WinGetExStyle(Window) | WS_EX_TOOLWINDOW, Window)
         ; MsgBox("Would hide: " DescribeWindow(Window))
         TempHiddenWindows.Push(Window)
       }
@@ -69,7 +73,10 @@ FilteredWindowSwitcher() {
   Send "{Blind}{Tab}" ; Tab or Shift+Tab to go in reverse
   KeyWait "LAlt"
   for Window in TempHiddenWindows {
-    WinShow(Window)
+    ; WinShow(Window)
+    ; Don't need to remember WS_EX_TOOLWINDOW state, since we're not matching windows with WS_EX_TOOLWINDOW.
+    ; Same should be true for any style that hides windows from the task switcher, if there's a better one.
+    WinSetExStyle(WinGetExStyle(Window) & ~WS_EX_TOOLWINDOW, Window)
     ; MsgBox("Would show: " DescribeWindow(Window))
   }
   TempHiddenWindows.Length := 0
