@@ -30,13 +30,15 @@ WS_EX_TOOLWINDOW := 0x00000080
 WS_CHILD := 0x40000000
 TempHiddenWindows := []
 !+`:: {
-  if TempHiddenWindows.Length {
-    Send "{Blind}{Tab}"
-  }
+  FilteredWindowSwitcher()
 }
 !`:: {
+  FilteredWindowSwitcher()
+}
+FilteredWindowSwitcher() {
   if TempHiddenWindows.Length {
     ; Needs #MaxThreadsPerHotkey 2 to handle Alt+`+`+`... to tab through windows with `, while waiting for Alt to be released
+    ; Needs {Blind} to handle Alt+Shift+` to go in reverse
     Send "{Blind}{Tab}"
     return
   }
@@ -77,7 +79,8 @@ TempHiddenWindows := []
       }
     }
   }
-  Send "{LAlt Down}{Tab}"
+  Send "{LAlt Down}"
+  Send "{Blind}{Tab}" ; Tab or Shift+Tab to go in reverse
   KeyWait "LAlt"
   for Window in TempHiddenWindows {
     WinShow(Window)
