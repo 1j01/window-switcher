@@ -23,7 +23,7 @@
 ; then trigger Alt+Tab to switch between them.
 ; TODO: just remove windows from task switcher, not the task bar
 ; Adding WS_EX_TOOLWINDOW is much faster than WinHide/WinShow (it makes the actual interaction instantaneous!),
-; but it still causes distracting animation in the taskbar.
+; but it still causes distracting animation in the taskbar, particularly when taskbar button labels are enabled.
 ; Is there a less obtrusive way to remove windows from the task switcher?
 
 #MaxThreadsPerHotkey 2
@@ -45,7 +45,12 @@ FilteredWindowSwitcher() {
     Send "{Blind}{Tab}"
     return
   }
-  ActiveProcessName := WinGetProcessName("A")
+  try {
+    ActiveProcessName := WinGetProcessName("A")
+  } catch TargetError {
+    MakeSplash("Window Switcher", "Active window not found.", 1000)
+    return
+  }
   WinClassCount := WinGetCount("ahk_exe " ActiveProcessName)
   if WinClassCount = 1 {
     return
@@ -63,8 +68,18 @@ FilteredWindowSwitcher() {
     if !SameApp {
       if Switchable(Window) {
         ; WinHide(Window)
-        WinSetExStyle(WinGetExStyle(Window) | WS_EX_TOOLWINDOW, Window)
-        ; MsgBox("Would hide: " DescribeWindow(Window))
+        try {
+          WinSetExStyle(WinGetExStyle(Window) | WS_EX_TOOLWINDOW, Window)
+          ; MsgBox("Would hide: " DescribeWindow(Window), "Window Switcher")
+        } catch Error as e {
+          ; Gets permission errors for certain windows, such as Windows's Settings app.
+          ; Note: WinHide/WinShow doesn't work as a fallback for permission errors.
+          ; But it's better to leave some extraneous windows in the list than to throw an error message up,
+          ; especially while some windows are hidden.
+          ; Unfortunately, running as administrator doesn't help. It prevents errors, but fails to affect the windows.
+
+          ; MakeSplash("Window Switcher", "Error hiding window (" WinGetTitle(Window) "):`n" e.Message)
+        }
         TempHiddenWindows.Push(Window)
       }
     }
@@ -72,15 +87,25 @@ FilteredWindowSwitcher() {
   Send "{LAlt Down}"
   Send "{Blind}{Tab}" ; Tab or Shift+Tab to go in reverse
   KeyWait "LAlt"
+  messages := []
   for Window in TempHiddenWindows {
     ; WinShow(Window)
     ; Don't need to remember WS_EX_TOOLWINDOW state, since we're not matching windows with WS_EX_TOOLWINDOW.
     ; Same should be true for any style that hides windows from the task switcher, if there's a better one.
-    WinSetExStyle(WinGetExStyle(Window) & ~WS_EX_TOOLWINDOW, Window)
-    ; MsgBox("Would show: " DescribeWindow(Window))
+    try {
+      WinSetExStyle(WinGetExStyle(Window) & ~WS_EX_TOOLWINDOW, Window)
+      ; MsgBox("Would show: " DescribeWindow(Window), "Window Switcher")
+    } catch Error as e {
+      ; Delay error messages until after the switcher is closed and all windows are unhidden that can be.
+      messages.Push("Failed to unhide window from the task switcher.`n`n" DescribeWindow(Window) "`n`n" e.Message)
+    }
   }
   TempHiddenWindows.Length := 0
-  Send "{LAlt Up}"
+  Send "{LAlt Up}" ; This could be earlier, couldn't it?
+
+  for message in messages {
+    MsgBox(message, "Window Switcher", 0x10)
+  }
 }
 
 Switchable(Window) {
