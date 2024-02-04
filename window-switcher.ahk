@@ -205,16 +205,18 @@ DescribeWindow(Window) {
 ;--------------------------------------------------------
 ~^s:: {
   if WinActive(A_ScriptName) {
-    SplashGui := MakeSplash("AHK Auto-Reload", "`n  Reloading " A_ScriptName "  `n")
-    Sleep(500)
-    SplashGui.Destroy()
+    MakeSplash("AHK Auto-Reload", "`n  Reloading " A_ScriptName "  `n", 500)
     Reload
   }
 }
-MakeSplash(Title, Text) {
+MakeSplash(Title, Text, Duration := 0) {
   SplashGui := Gui(, Title)
   SplashGui.Opt("+AlwaysOnTop +Disabled -SysMenu +Owner")  ; +Owner avoids a taskbar button.
   SplashGui.Add("Text", , Text)
   SplashGui.Show("NoActivate")  ; NoActivate avoids deactivating the currently active window.
+  if Duration {
+    Sleep(Duration)
+    SplashGui.Destroy()
+  }
   return SplashGui
 }
