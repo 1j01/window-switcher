@@ -58,21 +58,7 @@ FilteredWindowSwitcher() {
       }
     }
     if !SameApp {
-      ; Heuristics determine if a window is in the taskbar
-      ; https://stackoverflow.com/a/2262791
-      ExStyle := WinGetExStyle(Window)
-      Style := WinGetStyle(Window)
-      Taskbar := !(Style & WS_CHILD)
-      if ExStyle & WS_EX_APPWINDOW {
-        Taskbar := true
-      }
-      if ExStyle & WS_EX_TOOLWINDOW {
-        Taskbar := false
-      }
-      ; if WinGetClass(Window) = "CabinetWClass" {
-      ;   Taskbar := false
-      ; }
-      if Taskbar {
+      if Switchable(Window) {
         WinHide(Window)
         ; MsgBox("Would hide: " DescribeWindow(Window))
         TempHiddenWindows.Push(Window)
@@ -88,6 +74,39 @@ FilteredWindowSwitcher() {
   }
   TempHiddenWindows.Length := 0
   Send "{LAlt Up}"
+}
+
+Switchable(Window) {
+  ; Heuristics determine if a window is in the taskbar
+  ; https://stackoverflow.com/a/2262791
+  ExStyle := WinGetExStyle(Window)
+  Style := WinGetStyle(Window)
+  Taskbar := !(Style & WS_CHILD)
+  if ExStyle & WS_EX_APPWINDOW {
+    Taskbar := true
+  }
+  if ExStyle & WS_EX_TOOLWINDOW {
+    Taskbar := false
+  }
+  ; if WinGetClass(Window) = "CabinetWClass" {
+  ;   Taskbar := false
+  ; }
+  return Taskbar
+
+  ; Not sure of the specific rules, or how much the priority of the cases matters.
+  ; AI-autocompleted logic is slightly different:
+  ; Style := WinGetStyle(Window)
+  ; ExStyle := WinGetExStyle(Window)
+  ; if Style & WS_CHILD {
+  ;   return false
+  ; }
+  ; if ExStyle & WS_EX_APPWINDOW {
+  ;   return true
+  ; }
+  ; if ExStyle & WS_EX_TOOLWINDOW {
+  ;   return false
+  ; }
+  ; return true
 }
 
 DescribeWindow(Window) {
