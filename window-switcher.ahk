@@ -12,8 +12,12 @@
 ; Tab or Shift+Tab also works (automatically, since that's what the switcher normally uses.)
 
 ; Limitations:
-; - Windows are hidden from the task bar as well, which can be distracting, as it animates, especially with taskbar button labels enabled.
-; - Some windows are not filtered out, such as Windows's Settings app. Running as administrator doesn't help.
+; - Windows are hidden from the task bar as well, which can be distracting,
+;   especially with taskbar button labels enabled, as it animates the taskbar buttons collapsing and expanding.
+; - Some windows are not hidden from the task switcher, such as the Task Manager, due to permission errors.
+;   - Running as administrator fixes this.
+; - UWP windows, such as Windows's Settings app, are not filtered out either.
+;   - They don't play well with any of the methods I've tried.
 ; - There may be side effects on the windows that get hidden, since it changes their window type, essentially, temporarily.
 ;   I haven't noticed any problems so far.
 
@@ -71,9 +75,17 @@ FilteredWindowSwitcher() {
           OriginalExStyles[Window] := ExStyle
           if WinGetClass(Window) = "ApplicationFrameWindow" {
             ; This is a Windows UWP app. It doesn't work to add WS_EX_TOOLWINDOW (though it doesn't generate an error).
-            ; In fact WinHide doesn't work either, for UWP apps that are not the active window.
-            ; It hides the window, but it doesn't hide it from the task switcher or the task bar.
+            ; In fact WinHide doesn't work either, for UWP apps.
+            ; It hides the window itself, but it doesn't hide it from the task switcher or the task bar.
             ; TODO: Find a way to hide UWP apps from the task switcher. This is pretty annoying!
+            ; My only real idea is to move the window to a different virtual desktop,
+            ; which would only work well with "Show all open windows when I press Alt+Tab" set to "Only on the desktop I'm using",
+            ; and ideally with "On the taskbar, show all open windows" set to "On all desktops",
+            ; which theoretically could avoid the taskbar animation, which could be nice for other windows as well.
+            ; (These settings are in Multitasking in Settings.)
+            ; No idea if it would be performant enough. There's a library for this though: https://github.com/FuPeiJiang/VD.ahk
+            ; Perhaps that just speaks to the complexity of the solution though.
+            ; It might be better to reimplement a task switcher from scratch at that point, though it would never look quite the same.
             ; WinHide(Window)
             ; Um, MakeSplash is no good here, since it blocks execution. But it's useful for debugging.
             ; MakeSplash("Window Switcher", "Hiding UWP app window: " WinGetTitle(Window), 1000)
@@ -85,11 +97,9 @@ FilteredWindowSwitcher() {
           }
           TempHiddenWindows.Push(Window)
         } catch Error as e {
-          ; It gets permission errors for certain windows, such as the Task Manager.
-          ; Note: WinHide/WinShow doesn't work as a fallback for permission errors.
-          ; But it's better to leave some extraneous windows in the list than to throw an error message up,
-          ; especially while some windows are hidden.
-          ; Unfortunately, running as administrator doesn't help. It prevents errors, but fails to affect the windows.
+          ; It can get permission errors for certain windows, such as the Task Manager.
+          ; But it's better to leave some extraneous windows in the list than to throw an error message up
+          ; (especially while some windows are hidden, though I've made an array to delay the messages now.)
 
           ; Messages.Push("Error hiding window from the task switcher.`n`n" DescribeWindow(Window) "`n`n" e.Message)
         }
