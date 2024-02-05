@@ -53,6 +53,7 @@ FilteredWindowSwitcher() {
   }
   WindowsOfApp := WinGetList("ahk_exe " ActiveProcessName)
   AllWindows := WinGetList()
+  Messages := []
   for Window in AllWindows {
     SameApp := false
     for WindowOfApp in WindowsOfApp {
@@ -68,13 +69,13 @@ FilteredWindowSwitcher() {
           WinSetExStyle(WinGetExStyle(Window) | WS_EX_TOOLWINDOW, Window)
           ; MsgBox("Would hide:`n`n" DescribeWindow(Window), "Window Switcher")
         } catch Error as e {
-          ; Gets permission errors for certain windows, such as Windows's Settings app.
+          ; It gets permission errors for certain windows, such as the Task Manager.
           ; Note: WinHide/WinShow doesn't work as a fallback for permission errors.
           ; But it's better to leave some extraneous windows in the list than to throw an error message up,
           ; especially while some windows are hidden.
           ; Unfortunately, running as administrator doesn't help. It prevents errors, but fails to affect the windows.
 
-          ; MakeSplash("Window Switcher", "Error hiding window (" WinGetTitle(Window) "):`n" e.Message)
+          ; Messages.Push("Error hiding window from the task switcher.`n`n" DescribeWindow(Window) "`n`n" e.Message)
         }
         TempHiddenWindows.Push(Window)
       }
@@ -83,7 +84,6 @@ FilteredWindowSwitcher() {
   Send "{LAlt Down}"
   Send "{Blind}{Tab}" ; Tab or Shift+Tab to go in reverse
   KeyWait "LAlt"
-  messages := []
   for Window in TempHiddenWindows {
     ; WinShow(Window)
     ; Don't need to remember WS_EX_TOOLWINDOW state, since we're not matching windows with WS_EX_TOOLWINDOW.
@@ -93,13 +93,13 @@ FilteredWindowSwitcher() {
       ; MsgBox("Would show:`n`n" DescribeWindow(Window), "Window Switcher")
     } catch Error as e {
       ; Delay error messages until after the switcher is closed and all windows are unhidden that can be.
-      messages.Push("Failed to unhide window from the task switcher.`n`n" DescribeWindow(Window) "`n`n" e.Message)
+      Messages.Push("Failed to unhide window from the task switcher.`n`n" DescribeWindow(Window) "`n`n" e.Message)
     }
   }
   TempHiddenWindows.Length := 0
   Send "{LAlt Up}" ; This could be earlier, couldn't it?
 
-  for message in messages {
+  for message in Messages {
     MsgBox(message, "Window Switcher", 0x10)
   }
 }
@@ -134,7 +134,7 @@ Switchable(Window) {
 }
 
 DescribeWindow(Window) {
-  return "Title: " WinGetTitle(Window) "`nClass: " WinGetClass(Window) "`nProcess Name: " WinGetProcessName(Window)
+  return "Window Title: " WinGetTitle(Window) "`nWindow Class: " WinGetClass(Window) "`nProcess Name: " WinGetProcessName(Window)
 }
 
 ;--------------------------------------------------------
