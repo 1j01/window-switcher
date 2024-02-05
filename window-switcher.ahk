@@ -65,13 +65,21 @@ FilteredWindowSwitcher() {
     }
     if !SameApp {
       if Switchable(Window) {
-        ; WinHide(Window)
         try {
-          ExStyle := WinGetExStyle(Window)  ; redundantly accessed in Switchable...
-          ; I'm trying to remove WS_EX_APPWINDOW as well, hoping to handle Windows UWP apps, but I wonder if they've made UWP apps annoyingly special. They certainly love to remove features.
-          OriginalExStyles[Window] := ExStyle
-          WinSetExStyle(ExStyle | WS_EX_TOOLWINDOW & ~WS_EX_APPWINDOW, Window)
           ; MsgBox("Would hide:`n`n" DescribeWindow(Window), "Window Switcher")
+          ExStyle := WinGetExStyle(Window)  ; redundantly accessed in Switchable...
+          OriginalExStyles[Window] := ExStyle
+          if WinGetClass(Window) = "ApplicationFrameWindow" {
+            ; This is a Windows UWP app. It doesn't work to add WS_EX_TOOLWINDOW (though it doesn't generate an error).
+            ; TODO: investigate why WinHide isn't working either, even though in a separate script, it does work
+            ; with UWP apps. Maybe it only works on the active window? Maybe it has to do with the alt+tab switcher?
+            WinHide(Window)
+            MakeSplash("Window Switcher", "Hiding UWP app window: " WinGetTitle(Window), 1000)
+          } else {
+            ; I have not seen any benefit to removing WS_EX_APPWINDOW, but I don't know if I've seen any windows with it.
+            ; It may help in some cases, if I've done it right, but I don't know.
+            WinSetExStyle(ExStyle | WS_EX_TOOLWINDOW & ~WS_EX_APPWINDOW, Window)
+          }
           TempHiddenWindows.Push(Window)
         } catch Error as e {
           ; It gets permission errors for certain windows, such as the Task Manager.
@@ -89,7 +97,8 @@ FilteredWindowSwitcher() {
   Send "{Blind}{Tab}" ; Tab or Shift+Tab to go in reverse
   KeyWait "LAlt"
   for Window in TempHiddenWindows {
-    ; WinShow(Window)
+    ; In case of UWP apps
+    WinShow(Window)
     ; Don't need to remember WS_EX_TOOLWINDOW state, since we're not matching windows with WS_EX_TOOLWINDOW.
     ; Restore WS_EX_APPWINDOW, if it was set. Don't change other styles; allow them to change while hidden.
     try {
