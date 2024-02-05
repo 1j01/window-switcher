@@ -68,6 +68,7 @@ FilteredWindowSwitcher() {
         try {
           WinSetExStyle(WinGetExStyle(Window) | WS_EX_TOOLWINDOW, Window)
           ; MsgBox("Would hide:`n`n" DescribeWindow(Window), "Window Switcher")
+          TempHiddenWindows.Push(Window)
         } catch Error as e {
           ; It gets permission errors for certain windows, such as the Task Manager.
           ; Note: WinHide/WinShow doesn't work as a fallback for permission errors.
@@ -77,7 +78,6 @@ FilteredWindowSwitcher() {
 
           ; Messages.Push("Error hiding window from the task switcher.`n`n" DescribeWindow(Window) "`n`n" e.Message)
         }
-        TempHiddenWindows.Push(Window)
       }
     }
   }
