@@ -19,7 +19,8 @@
 ; - UWP windows, such as Windows's Settings app, are not filtered out either.
 ;   - They don't play well with any of the methods I've tried.
 ; - There may be side effects on the windows that get hidden, since it changes their window type, essentially, temporarily.
-;   - I now have seen it leave File Explorer with no minimize or maximize buttons, stuck on a tool window style.
+;   - I now have seen it leave File Explorer with no minimize or maximize buttons, stuck on a tool window style,
+;     and permanently excluded from the task bar and task switcher.
 ;     (This may have only been due to a work-in-progress version of this script, or it may be a real issue.)
 ;     I didn't see this before adding removal of WS_EX_APPWINDOW, so that may be the cause (if it's not a fluke.)
 ;     Actually it might not be the removal of WS_EX_APPWINDOW, but the code supporting that,
@@ -82,7 +83,10 @@ FilteredWindowSwitcher() {
           OriginalExStyles[Window] := ExStyle
           if WinGetClass(Window) = "ApplicationFrameWindow" {
             ; This is a Windows UWP app. It doesn't work to add WS_EX_TOOLWINDOW (though it doesn't generate an error).
-            ; In fact WinHide doesn't work either, for UWP apps.
+            ; In fact, not even replacing all styles works:
+            ; WinSetExStyle(WS_EX_TOOLWINDOW, Window)
+            ; WinSetStyle(WS_CHILD, Window)
+            ; WinHide doesn't work either, for UWP apps.
             ; It hides the window itself, but it doesn't hide it from the task switcher or the task bar.
             ; TODO: Find a way to hide UWP apps from the task switcher. This is pretty annoying!
             ; My only real idea is to move the window to a different virtual desktop,
