@@ -1,27 +1,23 @@
 ;--------------------------------------------------------
 ; Alt+` to switch between windows of the same application
 ;--------------------------------------------------------
-; Version from https://superuser.com/a/1783158
-; !`:: {
-;   OldClass := WinGetClass("A")
-;   ActiveProcessName := WinGetProcessName("A")
-;   WinClassCount := WinGetCount("ahk_exe " ActiveProcessName)
-;   if WinClassCount = 1 {
-;     return
-;   }
-;   loop 2 {
-;     WinMoveBottom("A")
-;     WinActivate("ahk_exe" ActiveProcessName)
-;     NewClass := WinGetClass("A")
-;     if (OldClass != "CabinetWClass" or NewClass = "CabinetWClass") {
-;       break
-;     }
-;   }
-; }
 
-; Improved version: hide all windows except those from the same process,
-; then trigger Alt+Tab to switch between them.
-; TODO: just remove windows from task switcher, not the task bar
+; This script piggybacks on the built-in Alt+Tab window switcher,
+; filtering it to show only windows from the same process as the active window.
+; It listens for Alt+` and Alt+Shift+` and converts them to Alt+Tab and Alt+Shift+Tab, respectively,
+; after hiding windows from the task switcher by setting their WS_EX_TOOLWINDOW style,
+; and then unhiding them after the switcher is closed.
+; Pressing ` again while holding Alt will tab through the windows of the same application,
+; and Shift+` will tab through them in reverse.
+; Tab or Shift+Tab also works (automatically, since that's what the switcher normally uses.)
+
+; Limitations:
+; - Windows are hidden from the task bar as well, which can be distracting, as it animates, especially with taskbar button labels enabled.
+; - Some windows are not filtered out, such as Windows's Settings app. Running as administrator doesn't help.
+; - There may be side effects on the windows that get hidden, since it changes their window type, essentially, temporarily.
+;   I haven't noticed any problems so far.
+
+; TODO: remove windows from task switcher only, and not the task bar.
 ; Adding WS_EX_TOOLWINDOW is much faster than WinHide/WinShow (it makes the actual interaction instantaneous!),
 ; but it still causes distracting animation in the taskbar, particularly when taskbar button labels are enabled.
 ; Is there a less obtrusive way to remove windows from the task switcher?
