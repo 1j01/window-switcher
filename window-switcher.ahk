@@ -108,18 +108,14 @@ Switchable(Window) {
   ; Heuristics determine if a window is in the taskbar
   ; https://stackoverflow.com/a/2262791
   ExStyle := WinGetExStyle(Window)
-  Style := WinGetStyle(Window)
-  Taskbar := !(Style & WS_CHILD)
-  if ExStyle & WS_EX_APPWINDOW {
-    Taskbar := true
-  }
   if ExStyle & WS_EX_TOOLWINDOW {
-    Taskbar := false
+    return false
   }
-  ; if WinGetClass(Window) = "CabinetWClass" {
-  ;   Taskbar := false
-  ; }
-  return Taskbar
+  if ExStyle & WS_EX_APPWINDOW {
+    return true
+  }
+  Style := WinGetStyle(Window)
+  return !(Style & WS_CHILD)
 
   ; Not sure of the specific rules, or how much the priority of the cases matters.
   ; AI-autocompleted logic is slightly different:
