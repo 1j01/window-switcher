@@ -19,7 +19,11 @@
 ; - UWP windows, such as Windows's Settings app, are not filtered out either.
 ;   - They don't play well with any of the methods I've tried.
 ; - There may be side effects on the windows that get hidden, since it changes their window type, essentially, temporarily.
-;   I haven't noticed any problems so far.
+;   - I now have seen it leave File Explorer with no minimize or maximize buttons, stuck on a tool window style.
+;     (This _may_ have only been due to a work-in-progress version of this script, but it's likely a real issue.)
+;     I didn't see this before adding removal of WS_EX_APPWINDOW, so that may be the cause (if it's not a fluke.)
+;     Actually it might not be the removal of WS_EX_APPWINDOW, but the code supporting that,
+;     which allows for changes to other styles while hidden. If I change that, it might be fine.
 
 ; TODO: remove windows from task switcher only, and not the task bar.
 ; Adding WS_EX_TOOLWINDOW is much faster than WinHide/WinShow (it makes the actual interaction instantaneous!),
