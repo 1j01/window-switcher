@@ -28,6 +28,7 @@ WS_EX_APPWINDOW := 0x00040000
 WS_EX_TOOLWINDOW := 0x00000080
 WS_CHILD := 0x40000000
 TempHiddenWindows := []
+OriginalExStyles := Map()
 !+`:: {
   FilteredWindowSwitcher()
 }
@@ -66,7 +67,10 @@ FilteredWindowSwitcher() {
       if Switchable(Window) {
         ; WinHide(Window)
         try {
-          WinSetExStyle(WinGetExStyle(Window) | WS_EX_TOOLWINDOW, Window)
+          ExStyle := WinGetExStyle(Window)  ; redundantly accessed in Switchable...
+          ; I'm trying to remove WS_EX_APPWINDOW as well, hoping to handle Windows UWP apps, but I wonder if they've made UWP apps annoyingly special. They certainly love to remove features.
+          OriginalExStyles[Window] := ExStyle
+          WinSetExStyle(ExStyle | WS_EX_TOOLWINDOW & ~WS_EX_APPWINDOW, Window)
           ; MsgBox("Would hide:`n`n" DescribeWindow(Window), "Window Switcher")
           TempHiddenWindows.Push(Window)
         } catch Error as e {
@@ -87,9 +91,9 @@ FilteredWindowSwitcher() {
   for Window in TempHiddenWindows {
     ; WinShow(Window)
     ; Don't need to remember WS_EX_TOOLWINDOW state, since we're not matching windows with WS_EX_TOOLWINDOW.
-    ; Same should be true for any style that hides windows from the task switcher, if there's a better one.
+    ; Restore WS_EX_APPWINDOW, if it was set. Don't change other styles; allow them to change while hidden.
     try {
-      WinSetExStyle(WinGetExStyle(Window) & ~WS_EX_TOOLWINDOW, Window)
+      WinSetExStyle(WinGetExStyle(Window) & ~WS_EX_TOOLWINDOW | (OriginalExStyles[Window] & WS_EX_APPWINDOW), Window)
       ; MsgBox("Would show:`n`n" DescribeWindow(Window), "Window Switcher")
     } catch Error as e {
       ; Delay error messages until after the switcher is closed and all windows are unhidden that can be.
