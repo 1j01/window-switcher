@@ -66,7 +66,7 @@ FilteredWindowSwitcher() {
         ; WinHide(Window)
         try {
           WinSetExStyle(WinGetExStyle(Window) | WS_EX_TOOLWINDOW, Window)
-          ; MsgBox("Would hide: " DescribeWindow(Window), "Window Switcher")
+          ; MsgBox("Would hide:`n`n" DescribeWindow(Window), "Window Switcher")
         } catch Error as e {
           ; Gets permission errors for certain windows, such as Windows's Settings app.
           ; Note: WinHide/WinShow doesn't work as a fallback for permission errors.
@@ -90,7 +90,7 @@ FilteredWindowSwitcher() {
     ; Same should be true for any style that hides windows from the task switcher, if there's a better one.
     try {
       WinSetExStyle(WinGetExStyle(Window) & ~WS_EX_TOOLWINDOW, Window)
-      ; MsgBox("Would show: " DescribeWindow(Window), "Window Switcher")
+      ; MsgBox("Would show:`n`n" DescribeWindow(Window), "Window Switcher")
     } catch Error as e {
       ; Delay error messages until after the switcher is closed and all windows are unhidden that can be.
       messages.Push("Failed to unhide window from the task switcher.`n`n" DescribeWindow(Window) "`n`n" e.Message)
@@ -134,75 +134,7 @@ Switchable(Window) {
 }
 
 DescribeWindow(Window) {
-  Style := WinGetStyle(Window)
-  StyleText := Style " (0x" Format("{:X}", Style) ") ("
-  if Style & 0x800000 {
-    StyleText .= "WS_BORDER "
-  }
-  if Style & 0x80000000 {
-    StyleText .= "WS_POPUP "
-  }
-  if Style & 0xC00000 {
-    StyleText .= "WS_CAPTION "
-  }
-  if Style & 0x4000000 {
-    StyleText .= "WS_CLIPSIBLINGS "
-  }
-  if Style & 0x8000000 {
-    StyleText .= "WS_DISABLED "
-  }
-  if Style & 0x400000 {
-    StyleText .= "WS_DLGFRAME "
-  }
-  if Style & 0x20000 {
-    StyleText .= "WS_GROUP "
-  }
-  if Style & 0x100000 {
-    StyleText .= "WS_HSCROLL "
-  }
-  if Style & 0x1000000 {
-    StyleText .= "WS_MAXIMIZE "
-  }
-  if Style & 0x10000 {
-    StyleText .= "WS_MAXIMIZEBOX "
-  }
-  if Style & 0x20000000 {
-    StyleText .= "WS_MINIMIZE "
-  }
-  if Style & 0x20000 {
-    StyleText .= "WS_MINIMIZEBOX "
-  }
-  if Style & 0x0 {
-    StyleText .= "WS_OVERLAPPED "
-  }
-  if Style & 0xCF0000 {
-    StyleText .= "WS_OVERLAPPEDWINDOW "
-  }
-  if Style & 0x80880000 {
-    StyleText .= "WS_POPUPWINDOW "
-  }
-  if Style & 0x40000 {
-    StyleText .= "WS_SIZEBOX "
-  }
-  if Style & 0x80000 {
-    StyleText .= "WS_SYSMENU "
-  }
-  if Style & 0x10000 {
-    StyleText .= "WS_TABSTOP "
-  }
-  if Style & 0x40000 {
-    StyleText .= "WS_THICKFRAME "
-  }
-  if Style & 0x200000 {
-    StyleText .= "WS_VSCROLL "
-  }
-  if Style & 0x10000000 {
-    StyleText .= "WS_VISIBLE "
-  }
-  if Style & 0x4000000 {
-    StyleText .= "WS_CHILD "
-  }
-  return WinGetTitle(Window) "`nClass: " WinGetClass(Window) "`nProcess Name: " WinGetProcessName(Window) "`nMin/Max State: " WinGetMinMax(Window) "`nStyle: " StyleText
+  return "Title: " WinGetTitle(Window) "`nClass: " WinGetClass(Window) "`nProcess Name: " WinGetProcessName(Window)
 }
 
 ;--------------------------------------------------------
