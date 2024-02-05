@@ -74,8 +74,10 @@ FilteredWindowSwitcher() {
             ; In fact WinHide doesn't work either, for UWP apps that are not the active window.
             ; It hides the window, but it doesn't hide it from the task switcher or the task bar.
             ; TODO: Find a way to hide UWP apps from the task switcher. This is pretty annoying!
-            WinHide(Window)
-            MakeSplash("Window Switcher", "Hiding UWP app window: " WinGetTitle(Window), 1000)
+            ; WinHide(Window)
+            ; Um, MakeSplash is no good here, since it blocks execution. But it's useful for debugging.
+            ; MakeSplash("Window Switcher", "Hiding UWP app window: " WinGetTitle(Window), 1000)
+            ; MakeSplash("Window Switcher", "Can't hide UWP app window from task switcher: " WinGetTitle(Window), 1000)
           } else {
             ; I have not seen any benefit to removing WS_EX_APPWINDOW, but I don't know if I've seen any windows with it.
             ; It may help in some cases, if I've done it right, but I don't know.
