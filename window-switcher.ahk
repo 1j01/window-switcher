@@ -24,6 +24,10 @@
 ;     I didn't see this before adding removal of WS_EX_APPWINDOW, so that may be the cause (if it's not a fluke.)
 ;     Actually it might not be the removal of WS_EX_APPWINDOW, but the code supporting that,
 ;     which allows for changes to other styles while hidden. If I change that, it might be fine.
+;  - Quickly pressing Alt+` (or Alt+Tab) after Alt+` can show windows rapidly being added to the task switcher,
+;    and then the task switcher closes even if you're still holding Alt.
+;    - A workaround could be to delay opening the switcher until at least some time has passed since the switcher was last closed.
+;    - This may be largely due to the WinShow that I added that I don't need since it didn't help with UWP apps.
 
 ; TODO: remove windows from task switcher only, and not the task bar.
 ; Adding WS_EX_TOOLWINDOW is much faster than WinHide/WinShow (it makes the actual interaction instantaneous!),
@@ -32,11 +36,15 @@
 
 #MaxThreadsPerHotkey 2
 
+; MIN_TIME_BETWEEN_SWITCHER_ACTIVATIONS := 500
+
 WS_EX_APPWINDOW := 0x00040000
 WS_EX_TOOLWINDOW := 0x00000080
 WS_CHILD := 0x40000000
+
 TempHiddenWindows := []
 OriginalExStyles := Map()
+
 !+`:: {
   FilteredWindowSwitcher()
 }
@@ -113,6 +121,7 @@ FilteredWindowSwitcher() {
   Send "{LAlt Down}"
   Send "{Blind}{Tab}" ; Tab or Shift+Tab to go in reverse
   KeyWait "LAlt"
+  ; MakeSplash("Window Switcher", "Alt (physical key) released", 1000)
   for Window in TempHiddenWindows {
     ; In case of UWP apps
     WinShow(Window)
@@ -127,7 +136,9 @@ FilteredWindowSwitcher() {
     }
   }
   TempHiddenWindows.Length := 0
-  Send "{LAlt Up}" ; This could be earlier, couldn't it?
+  ; MakeSplash("Window Switcher", "Closing switcher (triggering logical release of Alt)", 1000)
+  Send "{LAlt Up}" ; This could be earlier, couldn't it? Yeah this comes way too late... oh, because I've added WinShow.
+  ; MakeSplash("Window Switcher", "Switcher closed.", 1000)
 
   for message in Messages {
     MsgBox(message, "Window Switcher", 0x10)
