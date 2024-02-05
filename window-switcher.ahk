@@ -71,8 +71,9 @@ FilteredWindowSwitcher() {
           OriginalExStyles[Window] := ExStyle
           if WinGetClass(Window) = "ApplicationFrameWindow" {
             ; This is a Windows UWP app. It doesn't work to add WS_EX_TOOLWINDOW (though it doesn't generate an error).
-            ; TODO: investigate why WinHide isn't working either, even though in a separate script, it does work
-            ; with UWP apps. Maybe it only works on the active window? Maybe it has to do with the alt+tab switcher?
+            ; In fact WinHide doesn't work either, for UWP apps that are not the active window.
+            ; It hides the window, but it doesn't hide it from the task switcher or the task bar.
+            ; TODO: Find a way to hide UWP apps from the task switcher. This is pretty annoying!
             WinHide(Window)
             MakeSplash("Window Switcher", "Hiding UWP app window: " WinGetTitle(Window), 1000)
           } else {
