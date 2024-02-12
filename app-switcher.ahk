@@ -1,5 +1,9 @@
 ; Requires AutoHotkey v2
 
+;--------------------------------------------------------
+; App Switcher
+;--------------------------------------------------------
+
 WM_GETICON := 0x007F
 ICON_BIG := 1
 ICON_SMALL := 0
@@ -41,7 +45,7 @@ GetClassLongPtrA(hwnd, nIndex) {
 
 ShowIcon(iconHandle) {
 	MyGui := Gui()
-	Pic := MyGui.Add("Pic", "w600 h-1 +Border", "HICON:*" iconHandle)
+	Pic := MyGui.Add("Pic", "", "HICON:*" iconHandle)
 	; MyGui.OnEvent("Escape", (*) => ExitApp())
 	; MyGui.OnEvent("Close", (*) => ExitApp())
 	MyGui.OnEvent("Escape", (*) => MyGui.Destroy())
