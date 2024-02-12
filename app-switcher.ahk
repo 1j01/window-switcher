@@ -85,7 +85,13 @@ Switchable(Window) {
 	return !(Style & WS_CHILD)
 }
 
-ShowAppSwitcher(iconHandles, appTitles) {
+AppSwitcher := 0
+AppSwitcherOpen := false ; could use AppSwitcher
+
+#MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
+
+ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
+	; TODO: Make focus visible
 	MyGui := Gui()
 	for index, iconHandle in iconHandles {
 		; MyGui.Add("Pic", "yM w128 h128", "HICON:*" iconHandle)
@@ -94,22 +100,34 @@ ShowAppSwitcher(iconHandles, appTitles) {
 		InnerSize := 32
 		Offset := (OuterSize - InnerSize) / 2
 		Offset2 := (OuterSize + InnerSize) / 2
-		MyGui.Add("Pic", "yM x+" Offset " Section", "HICON:*" iconHandle)
+		MyGui.Add("Pic", "yM x+" Offset " Section Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
 		MyGui.Add("Text", "w" OuterSize " x+-" Offset2 " ys+" Offset " center", appTitles[index])
 	}
 	; MyGui.OnEvent("Escape", (*) => ExitApp())
 	; MyGui.OnEvent("Close", (*) => ExitApp())
 	MyGui.OnEvent("Escape", (*) => MyGui.Destroy())
 	MyGui.Show
+	global AppSwitcher := MyGui
 }
 
-#Tab:: {
+#Tab::
++#Tab:: {
+	global AppSwitcherOpen
+	if AppSwitcherOpen {
+		if GetKeyState("Shift") {
+			Send "+{Tab}"
+		} else {
+			Send "{Tab}"
+		}
+		return
+	}
 	; TODO: guess at app title by common parts from window titles?
 	; Can't really guess between "untitled - Notepad" and "notepad - Untitled"
 	; Maybe this is why Windows doesn't have an app switcher like this
 	AllWindows := WinGetList()
 	IconsByApp := Map()
 	TitlesByApp := Map()
+	HWNDsByApp := Map()
 	for Window in AllWindows {
 		if !Switchable(Window) {
 			continue
@@ -119,15 +137,38 @@ ShowAppSwitcher(iconHandles, appTitles) {
 			App := WinGetProcessName(Window)
 			IconsByApp[App] := GetAppIconHandle(Window)
 			TitlesByApp[App] := WinGetTitle(Window)
+			HWNDsByApp[App] := Window
 		}
 	}
 	AppIcons := []
 	AppTitles := []
+	HWNDs := []
 	for App, iconHandle in IconsByApp {
 		AppIcons.Push(iconHandle)
 		AppTitles.Push(TitlesByApp[App])
+		HWNDs.Push(HWNDsByApp[App])
 	}
-	ShowAppSwitcher(AppIcons, AppTitles)
+	ShowAppSwitcher(AppIcons, AppTitles, HWNDs)
+	AppSwitcherOpen := true
+	if GetKeyState("LWin") {
+		KeyWait "LWin"
+	} else if GetKeyState("RWin") { ; just to be sure we don't wait forever in case the key was released quickly
+		KeyWait "RWin"
+	}
+	SelectedPic := AppSwitcher.FocusedCtrl
+	SelectedHWND := StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2]
+	MsgBox("SelectedPic: " SelectedPic.Hwnd "`nSelectedPic.Name: " SelectedPic.Name "`nSelectedHWND: " SelectedHWND "`n`n" DescribeWindow(SelectedHWND))
+	AppSwitcher.Destroy()
+	AppSwitcherOpen := false
+	; WinActivate(HWND)
+}
+
+DescribeWindow(Window) {
+	try {
+		return "Window Title: " WinGetTitle(Window) "`nWindow Class: " WinGetClass(Window) "`nProcess Name: " WinGetProcessName(Window)
+	} catch TargetError {
+		return "Nonexistent window"
+	}
 }
 
 
