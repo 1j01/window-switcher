@@ -110,11 +110,11 @@ global FocusRingByHWND := Map()
 
 #MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
 
-ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
+ShowAppSwitcher(Apps) {
 	global AppSwitcher := Gui()
-	for index, iconHandle in iconHandles {
+	for index, app in Apps {
 		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", "app-border-white.png")
-		FocusRingByHWND[HWNDs[index]] := FocusRing
+		FocusRingByHWND[app.HWND] := FocusRing
 		OuterSize := 128
 		IconSize := 32  ; TODO: get actual size of icon
 		BorderSize := 8
@@ -123,8 +123,8 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 		TextY := (OuterSize + IconSize) / 2 + BorderSize
 		TextHeight := OuterSize - TextY - BorderSize
 		; TODO: error handling for below line, presumably loading the icon can fail, but I don't know in what cases
-		AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
-		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, appTitles[index])
+		AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" app.HWND, "HICON:*" app.Icon)
+		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, app.Title)
 	}
 	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
 	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption " WS_THICKFRAME)
@@ -166,9 +166,7 @@ UpdateFocusHighlight() {
 	; Can't really guess between "untitled - Notepad" and "notepad - Untitled"
 	; Maybe this is why Windows doesn't have an app switcher like this
 	AllWindows := WinGetList()
-	IconsByApp := Map()
-	TitlesByApp := Map()
-	HWNDsByApp := Map()
+	Apps := Map()
 	for Window in AllWindows {
 		if !Switchable(Window) {
 			continue
@@ -176,20 +174,14 @@ UpdateFocusHighlight() {
 		iconHandle := GetAppIconHandle(Window)
 		if (iconHandle) {
 			App := WinGetProcessName(Window)
-			IconsByApp[App] := GetAppIconHandle(Window)
-			TitlesByApp[App] := WinGetTitle(Window)
-			HWNDsByApp[App] := Window
+			Apps[App] := {
+				Icon: GetAppIconHandle(Window),
+				Title: WinGetTitle(Window),
+				HWND: Window,
+			}
 		}
 	}
-	AppIcons := []
-	AppTitles := []
-	HWNDs := []
-	for App, iconHandle in IconsByApp {
-		AppIcons.Push(iconHandle)
-		AppTitles.Push(TitlesByApp[App])
-		HWNDs.Push(HWNDsByApp[App])
-	}
-	ShowAppSwitcher(AppIcons, AppTitles, HWNDs)
+	ShowAppSwitcher(Apps)
 	AppSwitcherOpen := true
 	UpdateFocusHighlight()
 	if GetKeyState("LWin") {
