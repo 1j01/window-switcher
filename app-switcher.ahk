@@ -104,20 +104,23 @@ Switchable(Window) {
 
 global AppSwitcher := 0
 global AppSwitcherOpen := false ; could use AppSwitcher
+global FocusRingByHWND := Map()
 
 #MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
 
 ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 	global AppSwitcher := Gui()
 	for index, iconHandle in iconHandles {
+		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section vFocusRingForAppWithHWND" HWNDs[index], "app-border-white.png")
+		FocusRingByHWND[HWNDs[index]] := FocusRing
 		; AppSwitcher.Add("Pic", "yM w128 h128", "HICON:*" iconHandle)
 		; AppSwitcher.Add("Text", "w128", appTitles[index])
 		OuterSize := 128
 		InnerSize := 32
 		Offset := (OuterSize - InnerSize) / 2
 		Offset2 := (OuterSize + InnerSize) / 2
-		AppSwitcher.Add("Pic", "yM x+" Offset " Section Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
-		AppSwitcher.Add("Text", "w" OuterSize " x+-" Offset2 " ys+" Offset " center", appTitles[index])
+		AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
+		AppSwitcher.Add("Text", "w" OuterSize " x+-" Offset2 " ys+" Offset2 " center", appTitles[index])
 	}
 	; AppSwitcher.OnEvent("Escape", (*) => ExitApp())
 	; AppSwitcher.OnEvent("Close", (*) => ExitApp())
@@ -130,19 +133,18 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 
 LastFocusHighlight := 0
 UpdateFocusHighlight() {
-	; TODO: Make focus visible even for opaque square icons, i.e. with a border instead of a background.
-	; The border option doesn't work when trying to add it dynamically, and it's very thin anyway...
 	global LastFocusHighlight
+	Pic := AppSwitcher.FocusedCtrl
 	if LastFocusHighlight {
 		try {
-			LastFocusHighlight.Opt("-Border -Background")
+			LastFocusHighlight.Value := "app-border-white.png"
 		} catch {
 			; App switcher closed and destroyed the control
 		}
 	}
-	Pic := AppSwitcher.FocusedCtrl
-	Pic.Opt("+Border Background0x0000FF")
-	LastFocusHighlight := Pic
+	FocusRing := FocusRingByHWND[Integer(StrSplit(Pic.Name, "PicForAppWithHWND")[2])]
+	FocusRing.Value := "app-border-blue.png"
+	LastFocusHighlight := FocusRing
 }
 
 #Tab::
