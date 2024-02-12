@@ -110,6 +110,21 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 	global AppSwitcher := MyGui
 }
 
+LastFocusHighlight := 0
+UpdateFocusHighlight() {
+	global LastFocusHighlight
+	if LastFocusHighlight {
+		try {
+			LastFocusHighlight.Opt("-Border -Background")
+		} catch {
+			; App switcher closed and destroyed the control
+		}
+	}
+	Pic := AppSwitcher.FocusedCtrl
+	Pic.Opt("+Border Background0x0000FF")
+	LastFocusHighlight := Pic
+}
+
 #Tab::
 +#Tab:: {
 	global AppSwitcherOpen
@@ -119,6 +134,7 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 		} else {
 			Send "{Tab}"
 		}
+		UpdateFocusHighlight()
 		return
 	}
 	; TODO: guess at app title by common parts from window titles?
@@ -150,6 +166,7 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 	}
 	ShowAppSwitcher(AppIcons, AppTitles, HWNDs)
 	AppSwitcherOpen := true
+	UpdateFocusHighlight()
 	if GetKeyState("LWin") {
 		KeyWait "LWin"
 	} else if GetKeyState("RWin") { ; just to be sure we don't wait forever in case the key was released quickly
