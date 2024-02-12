@@ -79,14 +79,19 @@ ShowIcons(iconHandles) {
 
 #Tab:: {
 	AllWindows := WinGetList()
-	AllIcons := []
+	IconsByApp := Map()
 	for Window in AllWindows {
 		iconHandle := GetAppIconHandle(Window)
 		if (iconHandle) {
-			AllIcons.Push(iconHandle)
+			App := WinGetProcessName(Window)
+			IconsByApp[App] := GetAppIconHandle(Window)
 		}
 	}
-	ShowIcons(AllIcons)
+	AppIcons := []
+	for App, iconHandle in IconsByApp {
+		AppIcons.Push(iconHandle)
+	}
+	ShowIcons(AppIcons)
 }
 
 #i:: {
