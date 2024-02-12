@@ -7,7 +7,7 @@
 ; This script piggybacks on the built-in Alt+Tab window switcher,
 ; filtering it to show only windows from the same process as the active window.
 ; It listens for Alt+` and Alt+Shift+` and converts them to Alt+Tab and Alt+Shift+Tab, respectively,
-; after hiding windows from the task switcher by setting their WS_EX_TOOLWINDOW style,
+; after hiding windows from the task switcher with the ITaskbarList API,
 ; and then unhiding them after the switcher is closed.
 ; Pressing ` again while holding Alt will tab through the windows of the same application,
 ; and Shift+` will tab through them in reverse.
@@ -19,15 +19,7 @@
 ; - Some windows are not hidden from the task switcher, such as the Task Manager, due to permission errors.
 ;   - Running as administrator fixes this.
 ; - UWP windows, such as Windows's Settings app, are not filtered out either.
-;   - They don't play well with any of the methods I've tried.
-; - There may be side effects on the windows that get hidden, since it changes their window type, essentially, temporarily.
-;   - I now have seen it leave File Explorer with no minimize or maximize buttons, stuck on a tool window style,
-;     and permanently excluded from the task bar and task switcher.
-;     (This may have only been due to a work-in-progress version of this script, or it may be a real issue.)
-;     I didn't see this before adding removal of WS_EX_APPWINDOW, so that may be the cause (if it's not a fluke.)
-;     Actually it might not be the removal of WS_EX_APPWINDOW, but the code supporting that,
-;     which allows for changes to other styles while hidden. If I change that, it might be fine.
-;     I've changed it to restore all styles for now, but I don't know if that's even related.
+;   - They don't play well with any of the methods I've tried (WinHide, WinSetExStyle, ITaskbarList.DeleteTab).
 
 ; TODO: remove windows from task switcher only, and not the task bar.
 ; Adding WS_EX_TOOLWINDOW is much faster than WinHide/WinShow (it makes the actual interaction instantaneous!),
@@ -40,8 +32,22 @@ WS_EX_APPWINDOW := 0x00040000
 WS_EX_TOOLWINDOW := 0x00000080
 WS_CHILD := 0x40000000
 
+IID_ITaskbarList := "{56FDF342-FD6D-11d0-958A-006097C9A090}"
+CLSID_TaskbarList := "{56FDF344-FD6D-11d0-958A-006097C9A090}"
+
+ITaskbarList_VTable := {
+  HrInit: 3,
+  AddTab: 4,
+  DeleteTab: 5,
+  ActivateTab: 6,
+  SetActiveAlt: 7,
+}
+; Create the TaskbarList object.
+TaskbarList := ComObject(CLSID_TaskbarList, IID_ITaskbarList)
+ComCall(ITaskbarList_VTable.HrInit, TaskbarList)
+
 TempHiddenWindows := []
-OriginalExStyles := Map()
+; OriginalExStyles := Map()
 
 !+`:: {
   FilteredWindowSwitcher()
@@ -81,38 +87,44 @@ FilteredWindowSwitcher() {
       if Switchable(Window) {
         try {
           ; MsgBox("Would hide:`n`n" DescribeWindow(Window), "Window Switcher")
-          ExStyle := WinGetExStyle(Window)  ; redundantly accessed in Switchable...
-          OriginalExStyles[Window] := ExStyle
-          if WinGetClass(Window) = "ApplicationFrameWindow" {
-            ; This is a Windows UWP app. It doesn't work to add WS_EX_TOOLWINDOW (though it doesn't generate an error).
-            ; In fact, not even replacing all styles works:
-            ; WinSetExStyle(WS_EX_TOOLWINDOW, Window)
-            ; WinSetStyle(WS_CHILD, Window)
-            ; WinHide doesn't work either, for UWP apps.
-            ; It hides the window itself, but it doesn't hide it from the task switcher or the task bar.
-            ; TODO: Find a way to hide UWP apps from the task switcher. This is pretty annoying!
-            ; My only real idea is to move the window to a different virtual desktop,
-            ; which would only work well with "Show all open windows when I press Alt+Tab" set to "Only on the desktop I'm using",
-            ; and ideally with "On the taskbar, show all open windows" set to "On all desktops",
-            ; which theoretically could avoid the taskbar animation, which could be nice for other windows as well.
-            ; (These settings are in Multitasking in Settings.)
-            ; No idea if it would be performant enough. There's a library for this though: https://github.com/FuPeiJiang/VD.ahk
-            ; Perhaps that just speaks to the complexity of the solution though.
-            ; It might be better to reimplement a task switcher from scratch at that point, though it would never look quite the same.
-            ; WinHide(Window)
-            ; Um, MakeSplash is no good here, since it blocks execution. But it's useful for debugging.
-            ; MakeSplash("Window Switcher", "Hiding UWP app window: " WinGetTitle(Window), 1000)
-            ; MakeSplash("Window Switcher", "Can't hide UWP app window from task switcher: " WinGetTitle(Window), 1000)
-          } else {
-            ; I have not seen any benefit to removing WS_EX_APPWINDOW, but I don't know if I've seen any windows with it.
-            ; It may help in some cases, if I've done it right, but I don't know.
-            WinSetExStyle(ExStyle | WS_EX_TOOLWINDOW & ~WS_EX_APPWINDOW, Window)
-          }
+          ; ExStyle := WinGetExStyle(Window)  ; redundantly accessed in Switchable...
+          ; OriginalExStyles[Window] := ExStyle
+          ; if WinGetClass(Window) = "ApplicationFrameWindow" {
+          ;   ; This is a Windows UWP app. It doesn't work to add WS_EX_TOOLWINDOW (though it doesn't generate an error).
+          ;   ; In fact, not even replacing all styles works:
+          ;   ; WinSetExStyle(WS_EX_TOOLWINDOW, Window)
+          ;   ; WinSetStyle(WS_CHILD, Window)
+          ;   ; WinHide doesn't work either, for UWP apps.
+          ;   ; It hides the window itself, but it doesn't hide it from the task switcher or the task bar.
+          ;   ; TODO: Find a way to hide UWP apps from the task switcher. This is pretty annoying!
+          ;   ; My only real idea is to move the window to a different virtual desktop,
+          ;   ; which would only work well with "Show all open windows when I press Alt+Tab" set to "Only on the desktop I'm using",
+          ;   ; and ideally with "On the taskbar, show all open windows" set to "On all desktops",
+          ;   ; which theoretically could avoid the taskbar animation, which could be nice for other windows as well.
+          ;   ; (These settings are in Multitasking in Settings.)
+          ;   ; No idea if it would be performant enough. There's a library for this though: https://github.com/FuPeiJiang/VD.ahk
+          ;   ; Perhaps that just speaks to the complexity of the solution though.
+          ;   ; It might be better to reimplement a task switcher from scratch at that point, though it would never look quite the same.
+          ;   ; WinHide(Window)
+          ;   ; Um, MakeSplash is no good here, since it blocks execution. But it's useful for debugging.
+          ;   ; MakeSplash("Window Switcher", "Hiding UWP app window: " WinGetTitle(Window), 1000)
+          ;   ; MakeSplash("Window Switcher", "Can't hide UWP app window from task switcher: " WinGetTitle(Window), 1000)
+          ; } else {
+          ;   ; I have not seen any benefit to removing WS_EX_APPWINDOW, but I don't know if I've seen any windows with it.
+          ;   ; It may help in some cases, if I've done it right, but I don't know.
+          ;   WinSetExStyle(ExStyle | WS_EX_TOOLWINDOW & ~WS_EX_APPWINDOW, Window)
+          ; }
+
+          ComCall(ITaskbarList_VTable.DeleteTab, TaskbarList, "ptr", Window)
+
           TempHiddenWindows.Push(Window)
         } catch Error as e {
-          ; It can get permission errors for certain windows, such as the Task Manager.
+          ; WinSetExStyle can get permission errors for certain windows, such as the Task Manager,
+          ; unless running as administrator.
           ; But it's better to leave some extraneous windows in the list than to throw an error message up
           ; (especially while some windows are hidden, though I've made an array to delay the messages now.)
+          ; UWP apps don't throw an error, but fail silently.
+          ; TaskBarList.DeleteTab also fails silently without admin rights.
 
           ; Messages.Push("Error hiding window from the task switcher.`n`n" DescribeWindow(Window) "`n`n" e.Message)
         }
@@ -133,7 +145,10 @@ FilteredWindowSwitcher() {
     ; but styles may be forced to change as a result of WS_EX_TOOLWINDOW / removing WS_EX_APPWINDOW, I'm not sure.
     try {
       ; WinSetExStyle(WinGetExStyle(Window) & ~WS_EX_TOOLWINDOW | (OriginalExStyles[Window] & WS_EX_APPWINDOW), Window)
-      WinSetExStyle(OriginalExStyles[Window], Window)
+      ; WinSetExStyle(OriginalExStyles[Window], Window)
+
+      ComCall(ITaskbarList_VTable.AddTab, TaskbarList, "ptr", Window)
+
       ; MsgBox("Would show:`n`n" DescribeWindow(Window), "Window Switcher")
     } catch Error as e {
       ; Delay error messages until after the switcher is closed and all windows are unhidden that can be.
