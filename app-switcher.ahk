@@ -50,7 +50,6 @@ ShowIcon(iconHandle) {
 	; MyGui.OnEvent("Close", (*) => ExitApp())
 	MyGui.OnEvent("Escape", (*) => MyGui.Destroy())
 	MyGui.Show
-	Pic.Value := "HICON:*" iconHandle
 }
 
 #i:: {
