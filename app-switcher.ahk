@@ -21,6 +21,10 @@ GCLP_MENUNAME := -8 ; Retrieves the pointer to the menu name string. The string 
 GCL_STYLE := -26 ; Retrieves the window-class style bits.
 GCLP_WNDPROC := -24 ; Retrieves the address of the window procedure, or a handle representing the address of the window procedure. You must use the CallWindowProc function to call the window procedure.
 
+WS_EX_APPWINDOW := 0x00040000
+WS_EX_TOOLWINDOW := 0x00000080
+WS_CHILD := 0x40000000
+
 
 GetAppIconHandle(hwnd) {
 	iconHandle := 0
@@ -66,6 +70,21 @@ GetClassLongPtrA(hwnd, nIndex) {
 	return DllCall("GetClassLongPtrA", "Ptr", hwnd, "int", nIndex, "Ptr")
 }
 
+Switchable(Window) {
+	; Heuristics determine if a window is in the taskbar
+	; https://stackoverflow.com/a/2262791
+	; TODO: priority of conditions (I couldn't find a definitive source, but someone gives an order in one of the answers)
+	ExStyle := WinGetExStyle(Window)
+	if ExStyle & WS_EX_TOOLWINDOW {
+		return false
+	}
+	if ExStyle & WS_EX_APPWINDOW {
+		return true
+	}
+	Style := WinGetStyle(Window)
+	return !(Style & WS_CHILD)
+}
+
 ShowAppSwitcher(iconHandles, appTitles) {
 	MyGui := Gui()
 	for index, iconHandle in iconHandles {
@@ -79,9 +98,6 @@ ShowAppSwitcher(iconHandles, appTitles) {
 }
 
 #Tab:: {
-	; TODO: why are multiple VS Code icons showing up? does process name include args? or...
-	; one shows "CodeSetup-stable-...-.tmp", maybe it updated since opening one of the windows
-	; so it's a different exe? or the Setup window is hidden and should be ignored by checking for WS_EX_TOOLWINDOW / visibility
 	; TODO: guess at app title by common parts from window titles?
 	; Can't really guess between "untitled - Notepad" and "notepad - Untitled"
 	; Maybe this is why Windows doesn't have an app switcher like this
@@ -89,6 +105,9 @@ ShowAppSwitcher(iconHandles, appTitles) {
 	IconsByApp := Map()
 	TitlesByApp := Map()
 	for Window in AllWindows {
+		if !Switchable(Window) {
+			continue
+		}
 		iconHandle := GetAppIconHandle(Window)
 		if (iconHandle) {
 			App := WinGetProcessName(Window)
