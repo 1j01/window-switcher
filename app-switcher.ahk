@@ -25,7 +25,6 @@ WS_EX_APPWINDOW := 0x00040000
 WS_EX_TOOLWINDOW := 0x00000080
 WS_CHILD := 0x40000000
 
-SS_CENTERIMAGE := 0x200
 
 GetAppIconHandle(hwnd) {
 	iconHandle := 0
@@ -101,7 +100,7 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 		InnerSize := 32
 		Offset := (OuterSize - InnerSize) / 2
 		Offset2 := (OuterSize + InnerSize) / 2
-		MyGui.Add("Pic", "yM x+" Offset " " SS_CENTERIMAGE " w" OuterSize " h" OuterSize " Section Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
+		MyGui.Add("Pic", "yM x+" Offset " Section Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
 		MyGui.Add("Text", "w" OuterSize " x+-" Offset2 " ys+" Offset " center", appTitles[index])
 	}
 	; MyGui.OnEvent("Escape", (*) => ExitApp())
