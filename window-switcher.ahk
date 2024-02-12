@@ -1,3 +1,5 @@
+; Requires AutoHotkey v2
+
 ;--------------------------------------------------------
 ; Alt+` to switch between windows of the same application
 ;--------------------------------------------------------
