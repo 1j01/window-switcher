@@ -120,10 +120,10 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 		BorderSize := 8
 		TextWidth := OuterSize - 2 * BorderSize
 		Offset := (OuterSize - IconSize) / 2
-		Offset2 := (OuterSize + IconSize) / 2
-		TextHeight := Offset - BorderSize
+		TextY := (OuterSize + IconSize) / 2 + BorderSize
+		TextHeight := OuterSize - TextY - BorderSize
 		AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
-		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" Offset2 " center " SS_WORDELLIPSIS " " SS_NOPREFIX, appTitles[index])
+		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, appTitles[index])
 	}
 	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
 	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption " WS_THICKFRAME)
