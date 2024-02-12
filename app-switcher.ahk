@@ -88,8 +88,14 @@ Switchable(Window) {
 ShowAppSwitcher(iconHandles, appTitles) {
 	MyGui := Gui()
 	for index, iconHandle in iconHandles {
-		MyGui.Add("Pic", "yM", "HICON:*" iconHandle)
-		MyGui.Add("Text", "w128", appTitles[index])
+		; MyGui.Add("Pic", "yM w128 h128", "HICON:*" iconHandle)
+		; MyGui.Add("Text", "w128", appTitles[index])
+		OuterSize := 128
+		InnerSize := 32
+		Offset := (OuterSize - InnerSize) / 2
+		Offset2 := (OuterSize + InnerSize) / 2
+		MyGui.Add("Pic", "yM x+" Offset " Section", "HICON:*" iconHandle)
+		MyGui.Add("Text", "w" OuterSize " x+-" Offset2 " ys+" Offset " center", appTitles[index])
 	}
 	; MyGui.OnEvent("Escape", (*) => ExitApp())
 	; MyGui.OnEvent("Close", (*) => ExitApp())
