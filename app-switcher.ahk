@@ -66,10 +66,11 @@ GetClassLongPtrA(hwnd, nIndex) {
 	return DllCall("GetClassLongPtrA", "Ptr", hwnd, "int", nIndex, "Ptr")
 }
 
-ShowIcons(iconHandles) {
+ShowAppSwitcher(iconHandles, appTitles) {
 	MyGui := Gui()
-	for iconHandle in iconHandles {
-		MyGui.Add("Pic", "", "HICON:*" iconHandle)
+	for index, iconHandle in iconHandles {
+		MyGui.Add("Pic", "yM", "HICON:*" iconHandle)
+		MyGui.Add("Text", "w128", appTitles[index])
 	}
 	; MyGui.OnEvent("Escape", (*) => ExitApp())
 	; MyGui.OnEvent("Close", (*) => ExitApp())
@@ -78,27 +79,30 @@ ShowIcons(iconHandles) {
 }
 
 #Tab:: {
+	; TODO: why are multiple VS Code icons showing up? does process name include args? or...
+	; one shows "CodeSetup-stable-...-.tmp", maybe it updated since opening one of the windows
+	; so it's a different exe? or the Setup window is hidden and should be ignored by checking for WS_EX_TOOLWINDOW / visibility
+	; TODO: guess at app title by common parts from window titles?
+	; Can't really guess between "untitled - Notepad" and "notepad - Untitled"
+	; Maybe this is why Windows doesn't have an app switcher like this
 	AllWindows := WinGetList()
 	IconsByApp := Map()
+	TitlesByApp := Map()
 	for Window in AllWindows {
 		iconHandle := GetAppIconHandle(Window)
 		if (iconHandle) {
 			App := WinGetProcessName(Window)
 			IconsByApp[App] := GetAppIconHandle(Window)
+			TitlesByApp[App] := WinGetTitle(Window)
 		}
 	}
 	AppIcons := []
+	AppTitles := []
 	for App, iconHandle in IconsByApp {
 		AppIcons.Push(iconHandle)
+		AppTitles.Push(TitlesByApp[App])
 	}
-	ShowIcons(AppIcons)
-}
-
-#i:: {
-	hwnd := WinExist("A")
-	iconHandle := GetAppIconHandle(hwnd)
-	; MsgBox("Icon handle: " iconHandle)
-	ShowIcons([iconHandle])
+	ShowAppSwitcher(AppIcons, AppTitles)
 }
 
 
