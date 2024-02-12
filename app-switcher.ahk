@@ -5,6 +5,7 @@
 ;--------------------------------------------------------
 
 WM_GETICON := 0x007F
+
 ICON_BIG := 1
 ICON_SMALL := 0
 ICON_SMALL2 := 2
@@ -21,9 +22,26 @@ GCLP_MENUNAME := -8 ; Retrieves the pointer to the menu name string. The string 
 GCL_STYLE := -26 ; Retrieves the window-class style bits.
 GCLP_WNDPROC := -24 ; Retrieves the address of the window procedure, or a handle representing the address of the window procedure. You must use the CallWindowProc function to call the window procedure.
 
+WS_CHILD := 0x40000000
+; WS_DLGFRAME := 0x00400000
+WS_THICKFRAME := 0x00040000
+
 WS_EX_APPWINDOW := 0x00040000
 WS_EX_TOOLWINDOW := 0x00000080
-WS_CHILD := 0x40000000
+
+
+; ; DWMWINDOWATTRIBUTE enum
+; DWMWA_WINDOW_CORNER_PREFERENCE := 33
+
+; ; DWM_WINDOW_CORNER_PREFERENCE enum
+; DWMWCP_DEFAULT := 0
+; DWMWCP_DONOTROUND := 1
+; DWMWCP_ROUND := 2
+; DWMWCP_ROUNDSMALL := 3
+
+; DwmSetWindowAttribute(hwnd, attribute, pvAttribute, cbAttribute) {
+; 	DllCall("dwmapi\DwmSetWindowAttribute", "ptr", hwnd, "int", pvAttribute, "int*", true, "int", cbAttribute)
+; }
 
 
 GetAppIconHandle(hwnd) {
@@ -85,8 +103,8 @@ Switchable(Window) {
 	return !(Style & WS_CHILD)
 }
 
-AppSwitcher := 0
-AppSwitcherOpen := false ; could use AppSwitcher
+global AppSwitcher := 0
+global AppSwitcherOpen := false ; could use AppSwitcher
 
 #MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
 
@@ -105,7 +123,11 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 	; MyGui.OnEvent("Escape", (*) => ExitApp())
 	; MyGui.OnEvent("Close", (*) => ExitApp())
 	MyGui.OnEvent("Escape", (*) => MyGui.Destroy())
+	MyGui.Opt("+AlwaysOnTop -SysMenu -Caption " WS_THICKFRAME)
 	MyGui.Show
+	; WinSetExStyle(WS_EX_DLGMODALFRAME, MyGui.Hwnd)
+	; DwmSetWindowAttribute(MyGui.Hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND, 4)  ; Assuming uint size is 4 bytes
+
 	global AppSwitcher := MyGui
 }
 
@@ -138,6 +160,8 @@ UpdateFocusHighlight() {
 		UpdateFocusHighlight()
 		return
 	}
+	; TODO: sort list of apps by recency, considering all windows, not just one per app,
+	; and focus the next one after the current active window's app
 	; TODO: guess at app title by common parts from window titles?
 	; Can't really guess between "untitled - Notepad" and "notepad - Untitled"
 	; Maybe this is why Windows doesn't have an app switcher like this
