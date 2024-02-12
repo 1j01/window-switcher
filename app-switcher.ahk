@@ -23,7 +23,6 @@ GCL_STYLE := -26 ; Retrieves the window-class style bits.
 GCLP_WNDPROC := -24 ; Retrieves the address of the window procedure, or a handle representing the address of the window procedure. You must use the CallWindowProc function to call the window procedure.
 
 WS_CHILD := 0x40000000
-; WS_DLGFRAME := 0x00400000
 WS_THICKFRAME := 0x00040000
 
 WS_EX_APPWINDOW := 0x00040000
@@ -109,26 +108,24 @@ global AppSwitcherOpen := false ; could use AppSwitcher
 #MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
 
 ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
-	MyGui := Gui()
+	global AppSwitcher := Gui()
 	for index, iconHandle in iconHandles {
-		; MyGui.Add("Pic", "yM w128 h128", "HICON:*" iconHandle)
-		; MyGui.Add("Text", "w128", appTitles[index])
+		; AppSwitcher.Add("Pic", "yM w128 h128", "HICON:*" iconHandle)
+		; AppSwitcher.Add("Text", "w128", appTitles[index])
 		OuterSize := 128
 		InnerSize := 32
 		Offset := (OuterSize - InnerSize) / 2
 		Offset2 := (OuterSize + InnerSize) / 2
-		MyGui.Add("Pic", "yM x+" Offset " Section Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
-		MyGui.Add("Text", "w" OuterSize " x+-" Offset2 " ys+" Offset " center", appTitles[index])
+		AppSwitcher.Add("Pic", "yM x+" Offset " Section Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
+		AppSwitcher.Add("Text", "w" OuterSize " x+-" Offset2 " ys+" Offset " center", appTitles[index])
 	}
-	; MyGui.OnEvent("Escape", (*) => ExitApp())
-	; MyGui.OnEvent("Close", (*) => ExitApp())
-	MyGui.OnEvent("Escape", (*) => MyGui.Destroy())
-	MyGui.Opt("+AlwaysOnTop -SysMenu -Caption " WS_THICKFRAME)
-	MyGui.Show
-	; WinSetExStyle(WS_EX_DLGMODALFRAME, MyGui.Hwnd)
-	; DwmSetWindowAttribute(MyGui.Hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND, 4)  ; Assuming uint size is 4 bytes
-
-	global AppSwitcher := MyGui
+	; AppSwitcher.OnEvent("Escape", (*) => ExitApp())
+	; AppSwitcher.OnEvent("Close", (*) => ExitApp())
+	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
+	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption " WS_THICKFRAME)
+	AppSwitcher.Show
+	; WinSetExStyle(WS_EX_DLGMODALFRAME, AppSwitcher.Hwnd)
+	; DwmSetWindowAttribute(AppSwitcher.Hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND, 4)  ; Assuming uint size is 4 bytes
 }
 
 LastFocusHighlight := 0
