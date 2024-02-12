@@ -23,18 +23,41 @@ GCLP_WNDPROC := -24 ; Retrieves the address of the window procedure, or a handle
 
 
 GetAppIconHandle(hwnd) {
-	iconHandle := SendMessage(WM_GETICON, ICON_SMALL2, 0, , hwnd)
-	if (!iconHandle)
-		iconHandle := SendMessage(WM_GETICON, ICON_SMALL, 0, , hwnd)
-	if (!iconHandle)
-		iconHandle := SendMessage(WM_GETICON, ICON_BIG, 0, , hwnd)
-	if (!iconHandle)
-		iconHandle := GetClassLongPtrA(hwnd, GCLP_HICON)
-	if (!iconHandle)
-		iconHandle := GetClassLongPtrA(hwnd, GCLP_HICONSM)
-
-	if (!iconHandle)
-		return 0
+	iconHandle := 0
+	try {
+		iconHandle := SendMessage(WM_GETICON, ICON_SMALL2, 0, , hwnd)
+	} catch {
+	}
+	if (!iconHandle) {
+		try {
+			iconHandle := SendMessage(WM_GETICON, ICON_SMALL, 0, , hwnd)
+		} catch {
+		}
+	}
+	if (!iconHandle) {
+		try {
+			iconHandle := SendMessage(WM_GETICON, ICON_BIG, 0, , hwnd)
+		} catch {
+		}
+	}
+	if (!iconHandle) {
+		try {
+			iconHandle := GetClassLongPtrA(hwnd, GCLP_HICON)
+		} catch {
+		}
+	}
+	if (!iconHandle) {
+		try {
+			iconHandle := GetClassLongPtrA(hwnd, GCLP_HICONSM)
+		} catch {
+		}
+	}
+	if (!iconHandle) {
+		try {
+			return 0
+		} catch {
+		}
+	}
 
 	return iconHandle
 }
@@ -52,6 +75,18 @@ ShowIcons(iconHandles) {
 	; MyGui.OnEvent("Close", (*) => ExitApp())
 	MyGui.OnEvent("Escape", (*) => MyGui.Destroy())
 	MyGui.Show
+}
+
+#Tab:: {
+	AllWindows := WinGetList()
+	AllIcons := []
+	for Window in AllWindows {
+		iconHandle := GetAppIconHandle(Window)
+		if (iconHandle) {
+			AllIcons.Push(iconHandle)
+		}
+	}
+	ShowIcons(AllIcons)
 }
 
 #i:: {
