@@ -43,9 +43,11 @@ GetClassLongPtrA(hwnd, nIndex) {
 	return DllCall("GetClassLongPtrA", "Ptr", hwnd, "int", nIndex, "Ptr")
 }
 
-ShowIcon(iconHandle) {
+ShowIcons(iconHandles) {
 	MyGui := Gui()
-	Pic := MyGui.Add("Pic", "", "HICON:*" iconHandle)
+	for iconHandle in iconHandles {
+		MyGui.Add("Pic", "", "HICON:*" iconHandle)
+	}
 	; MyGui.OnEvent("Escape", (*) => ExitApp())
 	; MyGui.OnEvent("Close", (*) => ExitApp())
 	MyGui.OnEvent("Escape", (*) => MyGui.Destroy())
@@ -56,7 +58,7 @@ ShowIcon(iconHandle) {
 	hwnd := WinExist("A")
 	iconHandle := GetAppIconHandle(hwnd)
 	; MsgBox("Icon handle: " iconHandle)
-	ShowIcon(iconHandle)
+	ShowIcons([iconHandle])
 }
 
 
