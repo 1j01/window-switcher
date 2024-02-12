@@ -113,8 +113,6 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 	for index, iconHandle in iconHandles {
 		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", "app-border-white.png")
 		FocusRingByHWND[HWNDs[index]] := FocusRing
-		; AppSwitcher.Add("Pic", "yM w128 h128", "HICON:*" iconHandle)
-		; AppSwitcher.Add("Text", "w128", appTitles[index])
 		OuterSize := 128
 		IconSize := 32  ; TODO: get actual size of icon
 		BorderSize := 8
@@ -124,12 +122,9 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 		AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
 		AppSwitcher.Add("Text", "w" TextWidth " xs+" BorderSize " ys+" Offset2 " center", appTitles[index])
 	}
-	; AppSwitcher.OnEvent("Escape", (*) => ExitApp())
-	; AppSwitcher.OnEvent("Close", (*) => ExitApp())
 	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
 	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption " WS_THICKFRAME)
 	AppSwitcher.Show
-	; WinSetExStyle(WS_EX_DLGMODALFRAME, AppSwitcher.Hwnd)
 	; DwmSetWindowAttribute(AppSwitcher.Hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND, 4)  ; Assuming uint size is 4 bytes
 }
 
