@@ -91,7 +91,6 @@ AppSwitcherOpen := false ; could use AppSwitcher
 #MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
 
 ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
-	; TODO: Make focus visible
 	MyGui := Gui()
 	for index, iconHandle in iconHandles {
 		; MyGui.Add("Pic", "yM w128 h128", "HICON:*" iconHandle)
@@ -112,6 +111,8 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 
 LastFocusHighlight := 0
 UpdateFocusHighlight() {
+	; TODO: Make focus visible even for opaque square icons, i.e. with a border instead of a background.
+	; The border option doesn't work when trying to add it dynamically, and it's very thin anyway...
 	global LastFocusHighlight
 	if LastFocusHighlight {
 		try {
