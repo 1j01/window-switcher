@@ -111,16 +111,18 @@ global FocusRingByHWND := Map()
 ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 	global AppSwitcher := Gui()
 	for index, iconHandle in iconHandles {
-		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section vFocusRingForAppWithHWND" HWNDs[index], "app-border-white.png")
+		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", "app-border-white.png")
 		FocusRingByHWND[HWNDs[index]] := FocusRing
 		; AppSwitcher.Add("Pic", "yM w128 h128", "HICON:*" iconHandle)
 		; AppSwitcher.Add("Text", "w128", appTitles[index])
 		OuterSize := 128
-		InnerSize := 32
-		Offset := (OuterSize - InnerSize) / 2
-		Offset2 := (OuterSize + InnerSize) / 2
+		IconSize := 32  ; TODO: get actual size of icon
+		BorderSize := 8
+		TextWidth := OuterSize - 2 * BorderSize  ; TODO: prevent text from escaping the border
+		Offset := (OuterSize - IconSize) / 2
+		Offset2 := (OuterSize + IconSize) / 2
 		AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
-		AppSwitcher.Add("Text", "w" OuterSize " x+-" Offset2 " ys+" Offset2 " center", appTitles[index])
+		AppSwitcher.Add("Text", "w" TextWidth " xs+" BorderSize " ys+" Offset2 " center", appTitles[index])
 	}
 	; AppSwitcher.OnEvent("Escape", (*) => ExitApp())
 	; AppSwitcher.OnEvent("Close", (*) => ExitApp())
