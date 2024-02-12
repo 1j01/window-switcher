@@ -122,6 +122,7 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 		Offset := (OuterSize - IconSize) / 2
 		TextY := (OuterSize + IconSize) / 2 + BorderSize
 		TextHeight := OuterSize - TextY - BorderSize
+		; TODO: error handling for below line, presumably loading the icon can fail, but I don't know in what cases
 		AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
 		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, appTitles[index])
 	}
