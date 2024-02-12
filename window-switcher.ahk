@@ -28,6 +28,8 @@
 
 #MaxThreadsPerHotkey 2
 
+TraySetIcon "shell32.dll", 99 ; overlapped windows icon - supposedly Icon ID 185 in IconsExtract, but I had to find it through trial and error in practice
+
 WS_EX_APPWINDOW := 0x00040000
 WS_EX_TOOLWINDOW := 0x00000080
 WS_CHILD := 0x40000000
