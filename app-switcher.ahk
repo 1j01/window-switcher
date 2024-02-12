@@ -28,6 +28,7 @@ WS_THICKFRAME := 0x00040000
 WS_EX_APPWINDOW := 0x00040000
 WS_EX_TOOLWINDOW := 0x00000080
 
+SS_WORDELLIPSIS := 0x00040000
 
 ; ; DWMWINDOWATTRIBUTE enum
 ; DWMWA_WINDOW_CORNER_PREFERENCE := 33
@@ -116,11 +117,12 @@ ShowAppSwitcher(iconHandles, appTitles, HWNDs) {
 		OuterSize := 128
 		IconSize := 32  ; TODO: get actual size of icon
 		BorderSize := 8
-		TextWidth := OuterSize - 2 * BorderSize  ; TODO: prevent text from escaping the border
+		TextWidth := OuterSize - 2 * BorderSize
 		Offset := (OuterSize - IconSize) / 2
 		Offset2 := (OuterSize + IconSize) / 2
+		TextHeight := Offset - BorderSize
 		AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" HWNDs[index], "HICON:*" iconHandle)
-		AppSwitcher.Add("Text", "w" TextWidth " xs+" BorderSize " ys+" Offset2 " center", appTitles[index])
+		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" Offset2 " center " SS_WORDELLIPSIS, appTitles[index])
 	}
 	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
 	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption " WS_THICKFRAME)
