@@ -173,7 +173,7 @@ UpdateFocusHighlight() {
 		KeyWait "RWin"
 	}
 	SelectedPic := AppSwitcher.FocusedCtrl
-	SelectedHWND := StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2]
+	SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])
 	MsgBox("SelectedPic: " SelectedPic.Hwnd "`nSelectedPic.Name: " SelectedPic.Name "`nSelectedHWND: " SelectedHWND "`n`n" DescribeWindow(SelectedHWND))
 	AppSwitcher.Destroy()
 	AppSwitcherOpen := false
