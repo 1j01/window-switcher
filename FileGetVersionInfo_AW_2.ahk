@@ -1,48 +1,14 @@
-; FileGetVersionInfo_AW(peFile := "", StringFileInfo := "", Delimiter := "|") {    ; Written by SKAN
-;   ; www.autohotkey.com/forum/viewtopic.php?t=64128          CD:24-Nov-2008 / LM:28-May-2010
-;   Wide := true
-;   CS := Wide ? "W" : "A"
-;   Spaces := "                        "
-;   DLL := "Version\"
-;   HexVal := "msvcrt\s" (Wide ? "w" : "") "printf"
-;   If !FVISize := DllCall(DLL "GetFileVersionInfoSize" CS, "Str", peFile, "UInt", 0) {
-;     DllCall("SetLastError", "UInt", 1)
-;     Return ""
-;   }
-;   FVI := Buffer(FVISize, 0)
-;   Trans := "" ;?
-;   VarSetStrCapacity(&Trans, 8 * (1 ? 2 : 1)) ; V1toV2: if 'Trans' is NOT a UTF-16 string, use 'Trans := Buffer(8 * ( A_IsUnicode ? 2 : 1 ))'
-;   DllCall(DLL "GetFileVersionInfo" CS, "Str", peFile, "Int", 0, "UInt", FVISize, "UInt*", &FVI)
-;   If !DllCall(DLL "VerQueryValue" CS, "UInt", FVI, "Str", "\VarFileInfo\Translation", "UIntP", &Translation, "UInt", 0) {
-;     DllCall("SetLastError", "UInt", 2)
-;     Return ""
-;   }
-;   If !DllCall(HexVal, "Str", Trans, "Str", "%08X", "UInt", NumGet(Translation + 0, "UPtr")) {
-;     DllCall("SetLastError", "UInt", 3)
-;     Return ""
-;   }
-;   Loop Parse, StringFileInfo, Delimiter
-;   { subBlock := "\StringFileInfo\" SubStr(Trans, -4) SubStr(Trans, 1, 4) "\" A_LoopField
-;     If !DllCall(DLL "VerQueryValue" CS, "UInt", FVI, "Str", SubBlock, "UIntP", &InfoPtr, "UInt", 0)
-;       Continue
-;     Value := DllCall("MulDiv", "UInt", InfoPtr, "Int", 1, "Int", 1, "Str")
-;     Info .= Value ? ((InStr(StringFileInfo, Delimiter) ? SubStr(A_LoopField Spaces, 1, 24) . A_Tab : "") . Value . Delimiter) : ""
-;   }
-;   Info := RTrim(Info, 1)
-;   Return Info
-; }
-
-FileGetVersionInfo_AW_IO(peFile := "", Fields := ["FileDescription"]) {
+FileGetVersionInfo_AW(PEFile := "", Fields := ["FileDescription"]) {
   ; Written by SKAN
   ; https://www.autohotkey.com/forum/viewtopic.php?t=64128       CD:24-Nov-2008 / LM:28-May-2010
   ; Updated for AHK v2 by 1j01                                   2024-02-12
   DLL := "Version\"
-  if !FVISize := DllCall(DLL "GetFileVersionInfoSizeW", "Str", peFile, "UInt", 0) {
+  if !FVISize := DllCall(DLL "GetFileVersionInfoSizeW", "Str", PEFile, "UInt", 0) {
     throw Error("Unable to retrieve size of file version information.")
   }
   FVI := Buffer(FVISize, 0)
   Translation := 0
-  DllCall(DLL "GetFileVersionInfoW", "Str", peFile, "Int", 0, "UInt", FVISize, "Ptr", FVI)
+  DllCall(DLL "GetFileVersionInfoW", "Str", PEFile, "Int", 0, "UInt", FVISize, "Ptr", FVI)
   if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", "\VarFileInfo\Translation", "UInt*", &Translation, "UInt", 0) {
     throw Error("Unable to retrieve file version translation information.")
   }
@@ -52,22 +18,11 @@ FileGetVersionInfo_AW_IO(peFile := "", Fields := ["FileDescription"]) {
   }
   TranslationHex := StrGet(TranslationHex, , "UTF-16")
   TranslationCode := SubStr(TranslationHex, -4) SubStr(TranslationHex, 1, 4)
-  ; MsgBox((
-  ;   "peFile: " peFile "`n"
-  ;   "FVISize: " FVISize "`n"
-  ;   "StrGet(FVI, ,): " StrGet(FVI, ,) "`n"  ; doesn't get past null bytes so you can't see much from here
-  ;   "StrLen(StrGet(FVI, ,)): " StrLen(StrGet(FVI, ,)) "`n"
-  ;   "FVI.Size: " FVI.Size "`n"
-  ;   "Translation: " Translation "`n"
-  ;   "TranslationHex: " TranslationHex "`n"
-  ;   "TranslationCode: " TranslationCode "`n"
-  ; ))
   PropertiesMap := Map()
   for Field in Fields {
-    subBlock := "\StringFileInfo\" TranslationCode "\" Field
+    SubBlock := "\StringFileInfo\" TranslationCode "\" Field
     InfoPtr := 0
     if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", SubBlock, "UIntP", &InfoPtr, "UInt", 0) {
-      ; PropertiesMap[Field] := "?" ; if you want to see what's missing
       continue
     }
     Value := DllCall("MulDiv", "UInt", InfoPtr, "Int", 1, "Int", 1, "Str")
@@ -81,7 +36,7 @@ FileGetVersionInfo_AW_IO(peFile := "", Fields := ["FileDescription"]) {
 
 TargetFile := A_AhkPath
 ; TargetFile := A_WinDir "\System32\calc.exe"
-Info := FileGetVersionInfo_AW_IO(TargetFile, ["FileDescription", "FileVersion", "InternalName", "LegalCopyright", "OriginalFilename", "ProductName", "ProductVersion", "CompanyName", "PrivateBuild", "SpecialBuild", "LegalTrademarks"])
+Info := FileGetVersionInfo_AW(TargetFile, ["FileDescription", "FileVersion", "InternalName", "LegalCopyright", "OriginalFilename", "ProductName", "ProductVersion", "CompanyName", "PrivateBuild", "SpecialBuild", "LegalTrademarks"])
 InfoString := ""
 for Key, Value in Info
   InfoString .= Key ": " Value "`n"
