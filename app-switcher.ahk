@@ -234,38 +234,44 @@ Topmost(Windows) {
 SortByRecency(Windows) {
 	; Sort the windows by z-index, which essentially maps to recency.
 	; By comparing subsets of the list, we can order the whole list.
-	BubbleSort(Windows, (A, B) =>
+	SortArray(Windows, (A, B) =>
 		Topmost([A, B]) == A ? -1 : 1)
 }
-; procedure bubbleSort(A : list of sortable items)
-;     n := length(A)
-;     repeat
-;         newn := 0
-;         for i := 1 to n - 1 inclusive do
-;             if A[i - 1] > A[i] then
-;                 swap(A[i - 1], A[i])
-;                 newn := i
-;             end if
-;         end for
-;         n := newn
-;     until n ≤ 1
-; end procedure
 
-BubbleSort(Array, Compare) {
-	N := Array.Len()
-	loop {
-		NewN := 0
-		for i, _ in Array {
-			if (i <= N and i > 1) {  ; Trying to handle 1-based arrays, not sure if this is correct
-				if (Compare(Array[i], Array[i + 1]) > 0) {
-					Array[i, i + 1] := Array[i + 1], Array[i]
-					NewN := i
-				}
-			}
+SortArray(Array, ComparisonFunction) {
+	; Insertion sort
+	; Note one-based array indexing
+	i := 1
+	while (i < Array.Length) {
+		j := i
+		while (j > 0 && ComparisonFunction(Array[j], Array[j + 1]) > 0) {
+			Tmp := Array[j]
+			Array[j] := Array[j + 1]
+			Array[j + 1] := Tmp
+			j--
 		}
-		N := NewN
-	} until (N <= 1)
+		i++
+	}
+	return Array
 }
+
+; MsgBox((
+; 	"SortArray([3, 2, 1], (A, B) => A - B) = " FormatArray(SortArray([3, 2, 1], (A, B) => A - B)) "`n" ; [1, 2, 3]
+; 	"SortArray([3, 2, 1], (A, B) => B - A) = " FormatArray(SortArray([3, 2, 1], (A, B) => B - A)) "`n" ; [3, 2, 1]
+; 	"SortArray([], (A, B) => B - A) = " FormatArray(SortArray([], (A, B) => B - A)) "`n" ; []
+; ))
+
+; FormatArray(Array) {
+; 	Str := "["
+; 	for index, item in Array {
+; 		Str .= item
+; 		if (index < Array.Length) {
+; 			Str .= ", "
+; 		}
+; 	}
+; 	Str .= "]"
+; 	return Str
+; }
 
 DescribeWindow(Window) {
 	try {
