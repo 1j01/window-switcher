@@ -162,10 +162,16 @@ UpdateFocusHighlight() {
 	}
 	; TODO: sort list of apps by recency, considering all windows, not just one per app,
 	; and focus the next one after the current active window's app
-	; TODO: guess at app title by common parts from window titles?
-	; Can't really guess between "untitled - Notepad" and "notepad - Untitled"
-	; Maybe this is why Windows doesn't have an app switcher like this
+	; TODO: get app names from shortcut files like task bar seems to? or from task bar somehow?
+	; Right now Chrome apps show up as Google Chrome, unseparated from browser windows, unlike on the task bar.
+	; If you right click on the taskbar button, it shows the Chrome app's name, and if you right click on that and click "Properties"
+	; you can see shortcut information. In the General tab, the Location will be something like
+	; `C:\Users\Isaiah\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar` or
+	; `C:\Users\Isaiah\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps`
+	; depending on whether the app is pinned to the task bar or not.
+
 	AllWindows := WinGetList()
+	; WindowsByProcessPath := Map()
 	Apps := Map()
 	for Window in AllWindows {
 		if !Switchable(Window) {
@@ -173,12 +179,21 @@ UpdateFocusHighlight() {
 		}
 		iconHandle := GetAppIconHandle(Window)
 		if (iconHandle) {
-			App := WinGetProcessName(Window)
-			Apps[App] := {
+			ProcessPath := WinGetProcessPath(Window)
+			try {
+				Info := FileGetVersionInfo_AW(ProcessPath, ["FileDescription", "ProductName"])
+				Title := Info["FileDescription"] ? Info["FileDescription"] : Info["ProductName"]
+				; Title := Info["ProductName"] ? Info["ProductName"] : Info["FileDescription"]
+			} catch {
+				Title := WinGetTitle(Window)
+			}
+			Apps[ProcessPath] := {
 				Icon: GetAppIconHandle(Window),
-				Title: WinGetTitle(Window),
+				Title: Title,
 				HWND: Window,
 			}
+			; WindowsByProcessPath[ProcessPath] := WindowsByProcessPath[ProcessPath] ? WindowsByProcessPath[ProcessPath] : []
+			; WindowsByProcessPath[ProcessPath].Push(Window)
 		}
 	}
 	ShowAppSwitcher(Apps)
@@ -198,10 +213,42 @@ UpdateFocusHighlight() {
 
 DescribeWindow(Window) {
 	try {
-		return "Window Title: " WinGetTitle(Window) "`nWindow Class: " WinGetClass(Window) "`nProcess Name: " WinGetProcessName(Window)
+		return "Window Title: " WinGetTitle(Window) "`nWindow Class: " WinGetClass(Window) "`nProcess Path: " WinGetProcessPath(Window)
 	} catch TargetError {
 		return "Nonexistent window"
 	}
+}
+FileGetVersionInfo_AW(PEFile := "", Fields := ["FileDescription"]) {
+	; Written by SKAN
+	; https://www.autohotkey.com/forum/viewtopic.php?t=64128       CD:24-Nov-2008 / LM:28-May-2010
+	; Updated for AHK v2 by 1j01                                   2024-02-12
+	DLL := "Version\"
+	if !FVISize := DllCall(DLL "GetFileVersionInfoSizeW", "Str", PEFile, "UInt", 0) {
+		throw Error("Unable to retrieve size of file version information.")
+	}
+	FVI := Buffer(FVISize, 0)
+	Translation := 0
+	DllCall(DLL "GetFileVersionInfoW", "Str", PEFile, "Int", 0, "UInt", FVISize, "Ptr", FVI)
+	if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", "\VarFileInfo\Translation", "UInt*", &Translation, "UInt", 0) {
+		throw Error("Unable to retrieve file version translation information.")
+	}
+	TranslationHex := Buffer(16)
+	if !DllCall("wsprintf", "Ptr", TranslationHex, "Str", "%08X", "UInt", NumGet(Translation + 0, "UPtr"), "Cdecl") {
+		throw Error("Unable to format number as hexadecimal.")
+	}
+	TranslationHex := StrGet(TranslationHex, , "UTF-16")
+	TranslationCode := SubStr(TranslationHex, -4) SubStr(TranslationHex, 1, 4)
+	PropertiesMap := Map()
+	for Field in Fields {
+		SubBlock := "\StringFileInfo\" TranslationCode "\" Field
+		InfoPtr := 0
+		if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", SubBlock, "UIntP", &InfoPtr, "UInt", 0) {
+			continue
+		}
+		Value := DllCall("MulDiv", "UInt", InfoPtr, "Int", 1, "Int", 1, "Str")
+		PropertiesMap[Field] := Value
+	}
+	return PropertiesMap
 }
 
 
