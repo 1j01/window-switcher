@@ -172,9 +172,24 @@ UpdateFocusHighlight() {
 
 	AllWindows := WinGetList()
 	; WindowsByProcessPath := Map()
+	ProcessPaths := []
 	Apps := Map()
 	for Window in AllWindows {
 		if !Switchable(Window) {
+			continue
+		}
+		ProcessPath := WinGetProcessPath(Window)
+		ProcessPaths.Push(ProcessPath)
+		; if !WindowsByProcessPath.Has(ProcessPath) {
+		; 	WindowsByProcessPath[ProcessPath] := []
+		; }
+		; WindowsByProcessPath[ProcessPath].Push(Window)
+	}
+	; for ProcessPath, Windows in WindowsByProcessPath {
+	for ProcessPath in ProcessPaths {
+		try {
+			Window := WinGetID("ahk_exe " ProcessPath)
+		} catch TargetError {
 			continue
 		}
 		iconHandle := GetAppIconHandle(Window)
@@ -192,8 +207,6 @@ UpdateFocusHighlight() {
 				Title: Title,
 				HWND: Window,
 			}
-			; WindowsByProcessPath[ProcessPath] := WindowsByProcessPath[ProcessPath] ? WindowsByProcessPath[ProcessPath] : []
-			; WindowsByProcessPath[ProcessPath].Push(Window)
 		}
 	}
 	ShowAppSwitcher(Apps)
