@@ -122,8 +122,12 @@ ShowAppSwitcher(Apps) {
 		Offset := (OuterSize - IconSize) / 2
 		TextY := (OuterSize + IconSize) / 2 + BorderSize
 		TextHeight := OuterSize - TextY - BorderSize
-		; TODO: error handling for below line, presumably loading the icon can fail, but I don't know in what cases
-		AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" app.HWND, "HICON:*" app.Icon)
+		try {
+			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" app.HWND, "HICON:*" app.Icon)
+		} catch {
+			; Loading the icon can fail, but I don't know in what cases. It just says "Failed to add control"
+			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " w32 h32 Tabstop vPicForAppWithHWND" app.HWND, "app-border-white.png")
+		}
 		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, app.Title)
 	}
 	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
@@ -170,6 +174,7 @@ UpdateFocusHighlight() {
 	; depending on whether the app is pinned to the task bar or not.
 
 	AllWindows := WinGetList()
+	WindowsByProcessPath := Map()
 	TopWindowsByProcessPath := Map()
 	; ProcessPathByWindow := Map()  ; optimization
 	ProcessPaths := []
@@ -179,14 +184,26 @@ UpdateFocusHighlight() {
 			continue
 		}
 		ProcessPath := WinGetProcessPath(Window)
+		; Note: this can have duplicates.
+		; There's no Set type or easy way to check for existence in an array, or uniquify an array,
+		; so it's a bit of a pain, but it shouldn't cause problems for now.
+		; Easiest fix would be to use the existing Map and extract keys.
 		ProcessPaths.Push(ProcessPath)
+
+		if !WindowsByProcessPath.Has(ProcessPath) {
+			WindowsByProcessPath[ProcessPath] := []
+		}
+		WindowsByProcessPath[ProcessPath].Push(Window)
 	}
 	for ProcessPath in ProcessPaths {
-		try {
-			Window := WinGetID("ahk_exe " ProcessPath)
-		} catch TargetError {
-			continue
-		}
+		; First approach fails to find a window for File Explorer.
+		; try {
+		; 	Window := WinGetID("ahk_exe " ProcessPath)
+		; } catch TargetError {
+		; 	continue
+		; }
+		; This approach is more reliable, as it uses the specific window IDs we found earlier.
+		Window := Topmost(WindowsByProcessPath[ProcessPath])
 		TopWindowsByProcessPath[ProcessPath] := Window
 	}
 	TopWindows := []
@@ -232,6 +249,7 @@ UpdateFocusHighlight() {
 GroupIDCounter := 0
 Topmost(Windows) {
 	; Returns the highest z-index window in the list
+	; Note: memory leak: there's no way to remove a group or remove an item from a group.
 	global GroupIDCounter
 	GroupID := "TestGroup" GroupIDCounter++
 	for Window in Windows {
@@ -242,8 +260,6 @@ Topmost(Windows) {
 SortByRecency(Windows) {
 	; Sort the windows by z-index, which essentially maps to recency.
 	; By comparing subsets of the list, we can order the whole list.
-	; return SortArray(Windows, (A, B) =>
-	; 	Random() < 0.5 ? -1 : 1)
 	SortArray(Windows, (A, B) =>
 		Topmost([A, B]) == A ? -1 : 1)
 }
