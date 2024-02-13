@@ -222,6 +222,51 @@ UpdateFocusHighlight() {
 	WinActivate(SelectedHWND)
 }
 
+GroupIDCounter := 0
+Topmost(Windows) {
+	; Returns the highest z-index window in the list
+	GroupID := GroupIDCounter++
+	for Window in Windows {
+		GroupAdd(GroupID, Window)
+	}
+	return WinGetID("ahk_group " GroupID)
+}
+SortByRecency(Windows) {
+	; Sort the windows by z-index, which essentially maps to recency.
+	; By comparing subsets of the list, we can order the whole list.
+	BubbleSort(Windows, (A, B) =>
+		Topmost([A, B]) == A ? -1 : 1)
+}
+; procedure bubbleSort(A : list of sortable items)
+;     n := length(A)
+;     repeat
+;         newn := 0
+;         for i := 1 to n - 1 inclusive do
+;             if A[i - 1] > A[i] then
+;                 swap(A[i - 1], A[i])
+;                 newn := i
+;             end if
+;         end for
+;         n := newn
+;     until n ≤ 1
+; end procedure
+
+BubbleSort(Array, Compare) {
+	N := Array.Len()
+	loop {
+		NewN := 0
+		for i, _ in Array {
+			if (i <= N and i > 1) {  ; Trying to handle 1-based arrays, not sure if this is correct
+				if (Compare(Array[i], Array[i + 1]) > 0) {
+					Array[i, i + 1] := Array[i + 1], Array[i]
+					NewN := i
+				}
+			}
+		}
+		N := NewN
+	} until (N <= 1)
+}
+
 DescribeWindow(Window) {
 	try {
 		return "Window Title: " WinGetTitle(Window) "`nWindow Class: " WinGetClass(Window) "`nProcess Path: " WinGetProcessPath(Window)
