@@ -43,11 +43,11 @@ FileGetVersionInfo_AW_IO(peFile := "", Fields := ["FileDescription"]) {
   FVI := Buffer(FVISize, 0)
   Translation := 0
   DllCall(DLL "GetFileVersionInfoW", "Str", peFile, "Int", 0, "UInt", FVISize, "Ptr", FVI)
-  if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", "\VarFileInfo\Translation", "UIntP", &Translation, "UInt", 0) {
+  if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", "\VarFileInfo\Translation", "UInt*", &Translation, "UInt", 0) {
     throw Error("Unable to retrieve file version translation information.")
   }
   TranslationHex := Buffer(16)
-  if !DllCall("wsprintf", "Ptr", TranslationHex, "Str", "%08X", "UInt", Translation, "Cdecl") {
+  if !DllCall("wsprintf", "Ptr", TranslationHex, "Str", "%08X", "UInt", NumGet(Translation + 0, "UPtr"), "Cdecl") {
     throw Error("Unable to format number as hexadecimal.")
   }
   TranslationHex := StrGet(TranslationHex, , "UTF-16")
@@ -55,7 +55,9 @@ FileGetVersionInfo_AW_IO(peFile := "", Fields := ["FileDescription"]) {
   ; MsgBox((
   ;   "peFile: " peFile "`n"
   ;   "FVISize: " FVISize "`n"
-  ;   "FVI: " StrGet(FVI, ,) "`n"
+  ;   "StrGet(FVI, ,): " StrGet(FVI, ,) "`n"  ; doesn't get past null bytes so you can't see much from here
+  ;   "StrLen(StrGet(FVI, ,)): " StrLen(StrGet(FVI, ,)) "`n"
+  ;   "FVI.Size: " FVI.Size "`n"
   ;   "Translation: " Translation "`n"
   ;   "TranslationHex: " TranslationHex "`n"
   ;   "TranslationCode: " TranslationCode "`n"
@@ -65,7 +67,7 @@ FileGetVersionInfo_AW_IO(peFile := "", Fields := ["FileDescription"]) {
     subBlock := "\StringFileInfo\" TranslationCode "\" Field
     InfoPtr := 0
     if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", SubBlock, "UIntP", &InfoPtr, "UInt", 0) {
-      PropertiesMap[Field] := "?" ; TODO: remove this line
+      ; PropertiesMap[Field] := "?" ; if you want to see what's missing
       continue
     }
     Value := DllCall("MulDiv", "UInt", InfoPtr, "Int", 1, "Int", 1, "Str")
@@ -76,30 +78,6 @@ FileGetVersionInfo_AW_IO(peFile := "", Fields := ["FileDescription"]) {
 
 
 #SingleInstance Force
-
-; Loop Files, A_WinDir "\System32\*.??l"
-;   Files .= "`n" A_LoopFileFullPath
-; Files := A_AhkPath . Files
-
-; StringFileInfo := "
-; ( LTrim
-; [color=#800000]  FileDescription
-;   FileVersion
-;   InternalName
-;   LegalCopyright
-;   OriginalFilename
-;   ProductName
-;   ProductVersion
-;   CompanyName
-;   PrivateBuild
-;   SpecialBuild
-;   LegalTrademarks
-; [/color]
-; )"
-
-; Loop Parse, Files, "`n"
-;   If VI := FileGetVersionInfo_AW(A_LoopField, StringFileInfo, "`n")
-;     MsgBox(A_LoopField "`n" VI)
 
 TargetFile := A_AhkPath
 ; TargetFile := A_WinDir "\System32\calc.exe"
