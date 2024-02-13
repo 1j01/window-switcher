@@ -131,7 +131,7 @@ ShowAppSwitcher(Apps) {
 		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, app.Title)
 	}
 	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
-	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption " WS_THICKFRAME)
+	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption +Owner " WS_THICKFRAME)
 	AppSwitcher.Show
 	; DwmSetWindowAttribute(AppSwitcher.Hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND, 4)  ; Assuming uint size is 4 bytes
 }
