@@ -47,19 +47,21 @@ SS_NOPREFIX := 0x00000080
 
 GetAppIconHandle(hwnd) {
 	iconHandle := 0
-	try {
-		iconHandle := SendMessage(WM_GETICON, ICON_SMALL2, 0, , hwnd)
-	} catch {
-	}
 	if (!iconHandle) {
 		try {
-			iconHandle := SendMessage(WM_GETICON, ICON_SMALL, 0, , hwnd)
+			iconHandle := SendMessage(WM_GETICON, ICON_BIG, 0, , hwnd)
 		} catch {
 		}
 	}
 	if (!iconHandle) {
 		try {
-			iconHandle := SendMessage(WM_GETICON, ICON_BIG, 0, , hwnd)
+			iconHandle := SendMessage(WM_GETICON, ICON_SMALL2, 0, , hwnd)
+		} catch {
+		}
+	}
+	if (!iconHandle) {
+		try {
+			iconHandle := SendMessage(WM_GETICON, ICON_SMALL, 0, , hwnd)
 		} catch {
 		}
 	}
