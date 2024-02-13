@@ -171,7 +171,7 @@ UpdateFocusHighlight() {
 	; depending on whether the app is pinned to the task bar or not.
 
 	AllWindows := WinGetList()
-	; WindowsByProcessPath := Map()
+	TopWindowsByProcessPath := Map()
 	ProcessPaths := []
 	Apps := Map()
 	for Window in AllWindows {
@@ -180,18 +180,16 @@ UpdateFocusHighlight() {
 		}
 		ProcessPath := WinGetProcessPath(Window)
 		ProcessPaths.Push(ProcessPath)
-		; if !WindowsByProcessPath.Has(ProcessPath) {
-		; 	WindowsByProcessPath[ProcessPath] := []
-		; }
-		; WindowsByProcessPath[ProcessPath].Push(Window)
 	}
-	; for ProcessPath, Windows in WindowsByProcessPath {
 	for ProcessPath in ProcessPaths {
 		try {
 			Window := WinGetID("ahk_exe " ProcessPath)
 		} catch TargetError {
 			continue
 		}
+		TopWindowsByProcessPath[ProcessPath] := Window
+	}
+	for ProcessPath, Window in TopWindowsByProcessPath {
 		iconHandle := GetAppIconHandle(Window)
 		if (iconHandle) {
 			ProcessPath := WinGetProcessPath(Window)
