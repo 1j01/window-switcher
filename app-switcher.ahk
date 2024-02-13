@@ -160,8 +160,7 @@ UpdateFocusHighlight() {
 		UpdateFocusHighlight()
 		return
 	}
-	; TODO: sort list of apps by recency, considering all windows, not just one per app,
-	; and focus the next one after the current active window's app
+	; TODO: initially select the next app after the currently focused app when opening the switcher
 	; TODO: get app names from shortcut files like task bar seems to? or from task bar somehow?
 	; Right now Chrome apps show up as Google Chrome, unseparated from browser windows, unlike on the task bar.
 	; If you right click on the taskbar button, it shows the Chrome app's name, and if you right click on that and click "Properties"
@@ -172,8 +171,9 @@ UpdateFocusHighlight() {
 
 	AllWindows := WinGetList()
 	TopWindowsByProcessPath := Map()
+	; ProcessPathByWindow := Map()  ; optimization
 	ProcessPaths := []
-	Apps := Map()
+	Apps := []
 	for Window in AllWindows {
 		if !Switchable(Window) {
 			continue
@@ -189,10 +189,17 @@ UpdateFocusHighlight() {
 		}
 		TopWindowsByProcessPath[ProcessPath] := Window
 	}
-	for ProcessPath, Window in TopWindowsByProcessPath {
+	TopWindows := []
+	for _, Window in TopWindowsByProcessPath {
+		TopWindows.Push(Window)
+	}
+	SortByRecency(TopWindows)
+
+	; for ProcessPath, Window in TopWindowsByProcessPath {
+	for Window in TopWindows {
 		iconHandle := GetAppIconHandle(Window)
 		if (iconHandle) {
-			ProcessPath := WinGetProcessPath(Window)
+			ProcessPath := WinGetProcessPath(Window)  ; TODO: maybe optimize by storing this in the loop above
 			try {
 				Info := FileGetVersionInfo_AW(ProcessPath, ["FileDescription", "ProductName"])
 				Title := Info["FileDescription"] ? Info["FileDescription"] : Info["ProductName"]
@@ -200,11 +207,11 @@ UpdateFocusHighlight() {
 			} catch {
 				Title := WinGetTitle(Window)
 			}
-			Apps[ProcessPath] := {
+			Apps.Push({
 				Icon: GetAppIconHandle(Window),
 				Title: Title,
 				HWND: Window,
-			}
+			})
 		}
 	}
 	ShowAppSwitcher(Apps)
@@ -225,15 +232,18 @@ UpdateFocusHighlight() {
 GroupIDCounter := 0
 Topmost(Windows) {
 	; Returns the highest z-index window in the list
-	GroupID := GroupIDCounter++
+	global GroupIDCounter
+	GroupID := "TestGroup" GroupIDCounter++
 	for Window in Windows {
-		GroupAdd(GroupID, Window)
+		GroupAdd(GroupID, "ahk_id " Window)
 	}
 	return WinGetID("ahk_group " GroupID)
 }
 SortByRecency(Windows) {
 	; Sort the windows by z-index, which essentially maps to recency.
 	; By comparing subsets of the list, we can order the whole list.
+	; return SortArray(Windows, (A, B) =>
+	; 	Random() < 0.5 ? -1 : 1)
 	SortArray(Windows, (A, B) =>
 		Topmost([A, B]) == A ? -1 : 1)
 }
