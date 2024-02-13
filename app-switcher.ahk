@@ -113,11 +113,11 @@ global FocusRingByHWND := Map()
 ShowAppSwitcher(Apps) {
 	global AppSwitcher := Gui()
 	for index, app in Apps {
-		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", "app-border-white.png")
+		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", "resources/app-border-inactive.png")
 		FocusRingByHWND[app.HWND] := FocusRing
 		OuterSize := 128
 		IconSize := 32  ; TODO: get actual size of icon
-		BorderSize := 8
+		BorderSize := 15
 		TextWidth := OuterSize - 2 * BorderSize
 		Offset := (OuterSize - IconSize) / 2
 		TextY := (OuterSize + IconSize) / 2 + BorderSize
@@ -126,7 +126,7 @@ ShowAppSwitcher(Apps) {
 			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" app.HWND, "HICON:*" app.Icon)
 		} catch {
 			; Loading the icon can fail, but I don't know in what cases. It just says "Failed to add control"
-			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " w32 h32 Tabstop vPicForAppWithHWND" app.HWND, "app-border-white.png")
+			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " w32 h32 Tabstop vPicForAppWithHWND" app.HWND, "resources/app-border-inactive.png")
 		}
 		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, app.Title)
 	}
@@ -142,13 +142,13 @@ UpdateFocusHighlight() {
 	Pic := AppSwitcher.FocusedCtrl
 	if LastFocusHighlight {
 		try {
-			LastFocusHighlight.Value := "app-border-white.png"
+			LastFocusHighlight.Value := "resources/app-border-inactive.png"
 		} catch {
 			; App switcher closed and destroyed the control
 		}
 	}
 	FocusRing := FocusRingByHWND[Integer(StrSplit(Pic.Name, "PicForAppWithHWND")[2])]
-	FocusRing.Value := "app-border-blue.png"
+	FocusRing.Value := "resources/app-border-active.png"
 	LastFocusHighlight := FocusRing
 }
 
