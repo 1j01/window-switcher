@@ -38,29 +38,28 @@ FileGetVersionInfo_AW_IO(peFile := "", Fields := ["FileDescription"]) {
   ; Updated for AHK v2 by 1j01                                   2024-02-12
   DLL := "Version\"
   if !FVISize := DllCall(DLL "GetFileVersionInfoSizeW", "Str", peFile, "UInt", 0) {
-    throw Error("Error: Unable to retrieve file version information size.")
+    throw Error("Unable to retrieve size of file version information.")
   }
   FVI := Buffer(FVISize, 0)
   Translation := 0
   DllCall(DLL "GetFileVersionInfoW", "Str", peFile, "Int", 0, "UInt", FVISize, "Ptr", FVI)
   if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", "\VarFileInfo\Translation", "UIntP", &Translation, "UInt", 0) {
-    throw Error("Error: Unable to retrieve file version translation information.")
+    throw Error("Unable to retrieve file version translation information.")
   }
   TranslationHex := Buffer(16)
-  ; if !DllCall("wsprintf", "Ptr", TranslationHex, "Str", "%08X", "UInt", NumGet(Translation + 0, "UPtr"), "Cdecl") {
   if !DllCall("wsprintf", "Ptr", TranslationHex, "Str", "%08X", "UInt", Translation, "Cdecl") {
-    throw Error("Error: Unable to format number as hexadecimal.")
+    throw Error("Unable to format number as hexadecimal.")
   }
   TranslationHex := StrGet(TranslationHex, , "UTF-16")
   TranslationCode := SubStr(TranslationHex, -4) SubStr(TranslationHex, 1, 4)
-  MsgBox((
-    "peFile: " peFile
-    "FVISize: " FVISize "`n"
-    "FVI: " StrGet(FVI, ,) "`n"
-    "Translation: " Translation "`n"
-    "TranslationHex: " TranslationHex "`n"
-    "TranslationCode: " TranslationCode "`n"
-  ))
+  ; MsgBox((
+  ;   "peFile: " peFile "`n"
+  ;   "FVISize: " FVISize "`n"
+  ;   "FVI: " StrGet(FVI, ,) "`n"
+  ;   "Translation: " Translation "`n"
+  ;   "TranslationHex: " TranslationHex "`n"
+  ;   "TranslationCode: " TranslationCode "`n"
+  ; ))
   PropertiesMap := Map()
   for Field in Fields {
     subBlock := "\StringFileInfo\" TranslationCode "\" Field
