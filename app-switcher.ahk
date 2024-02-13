@@ -164,7 +164,6 @@ UpdateFocusHighlight() {
 		UpdateFocusHighlight()
 		return
 	}
-	; TODO: initially select the next app after the currently focused app when opening the switcher
 	; TODO: get app names from shortcut files like task bar seems to? or from task bar somehow?
 	; Right now Chrome apps show up as Google Chrome, unseparated from browser windows, unlike on the task bar.
 	; If you right click on the taskbar button, it shows the Chrome app's name, and if you right click on that and click "Properties"
@@ -233,6 +232,13 @@ UpdateFocusHighlight() {
 	}
 	ShowAppSwitcher(Apps)
 	AppSwitcherOpen := true
+	; Initially select the next app after the currently focused app when opening the switcher.
+	; (Otherwise you always have to press Tab twice to get to the next app.)
+	if GetKeyState("Shift") {
+		Send "+{Tab}"
+	} else {
+		Send "{Tab}"
+	}
 	UpdateFocusHighlight()
 	if GetKeyState("LWin") {
 		KeyWait "LWin"
