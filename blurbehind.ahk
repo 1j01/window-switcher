@@ -65,26 +65,50 @@ DllCall("Dwmapi\DwmExtendFrameIntoClientArea",
 ; http://undoc.airesoft.co.uk/user32.dll/SetWindowCompositionAttribute.php
 ; https://gist.github.com/riverar/fd6525579d6bbafc6e48
 ; https://vhanla.codigobit.info/2015/07/enable-windows-10-aero-glass-aka-blur.html
-myGui.BackColor := 0
+myGui.BackColor := 0x000000
+
+; [StructLayout(LayoutKind.Sequential)]
+; internal struct AccentPolicy
+; {
+; 	public AccentState AccentState;
+; 	public uint AccentFlags;
+; 	public uint GradientColor;
+; 	public uint AnimationId;
+; }
 
 ; Use ACCENT_ENABLE_GRADIENT on Windows 11 to fix window dragging issues
-accent := Buffer(16, 0)
-if OS_MINOR_VER >= 22000
-	NumPut("Int", ACCENT_ENABLE_GRADIENT, accent)
-else
-	NumPut("Int", ACCENT_ENABLE_BLURBEHIND, accent)
-; NumPut("Int", ACCENT_ENABLE_ACRYLICBLURBEHIND, accent)
+accent := Buffer(4 * 4, 0)
+; if OS_MINOR_VER >= 22000
+; 	NumPut("Int", ACCENT_ENABLE_GRADIENT, accent)
+; else
+; 	NumPut("Int", ACCENT_ENABLE_BLURBEHIND, accent)
+NumPut(
+	"Int", ACCENT_ENABLE_ACRYLICBLURBEHIND,
+	"Int", 0,
+	"Int", 0x55555555, ; must be non-zero ARGB color? or something like that. but I can't get it to work.
+	"Int", 0,
+	accent
+)
+
+; [StructLayout(LayoutKind.Sequential)]
+; internal struct WindowCompositionAttributeData
+; {
+; 	public WindowCompositionAttribute Attribute;
+; 	public IntPtr Data;
+; 	public int SizeOfData;
+; }
 
 wcad := Buffer(A_PtrSize + A_PtrSize + 4, 0)
 NumPut(
 	"Ptr", WCA_ACCENT_POLICY,
 	"Ptr", accent.Ptr,
-	"Int", 16,
+	"Int", accent.Size,
 	wcad
 )
+
 DllCall("SetWindowCompositionAttribute",
-	"Ptr", myGui.hWnd,	; HWND hwnd
-	"Ptr", wcad,	; WINCOMPATTRDATA* pAttrData
+	"Ptr", myGui.hWnd,  ; HWND hwnd
+	"Ptr", wcad,  ; WINCOMPATTRDATA* pAttrData
 )
 
 
