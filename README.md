@@ -17,8 +17,8 @@ It provides shortcuts found on many other operating systems, that are sorely mis
 
 ### Window Switcher
 1. Install [AutoHotkey v2](https://www.autohotkey.com/)
-2. Download `window-switcher.ahk`
-3. Set `window-switcher.ahk` to run on startup
+2. Download [`window-switcher.ahk`](window-switcher.ahk)
+3. Set `window-switcher.ahk` to run on startup (see below)
 
 ### Application Switcher
 
@@ -26,8 +26,20 @@ Note: unlike the Window Switcher, the Application Switcher is a totally custom U
 It won't perfectly match the Windows theme.
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/)
-2. Download `app-switcher.ahk` and the `resources` folder
-3. Set `app-switcher.ahk` to run on startup
+2. Download `app-switcher.ahk` and the `resources` folder.
+   The easiest way is to [download the entire repository as a zip file](https://github.com/1j01/window-switcher/archive/refs/heads/main.zip).
+3. Set `app-switcher.ahk` to run on startup (see below)
+
+### Running on Startup
+
+- To run at startup with administrator privileges:
+  - Place the script somewhere permanent, since moving or renaming it will break the startup action.
+    - In the case of the app switcher, the `resources` folder must be in the same directory as the script.
+  - Open Task Scheduler
+  - Action > Create Task...
+  - Check "Run with highest privileges" in "Security options" in General tab
+  - In Triggers tab, click "New..." and set the type to "At log on"
+  - For the Action, you can browse for the script.
 
 ## Known Issues
 
@@ -58,6 +70,6 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 - Compile the scripts into executables
   - Figure out how to handle the `resources` folder
   - Create GitHub release
-- Clarify the installation instructions, especially setting up the scripts to run on startup
+  - Simplify installation instructions
 - Copy over a few VS Code settings, recommended extension, and spelling dictionary
 - Add screenshots/gifs
