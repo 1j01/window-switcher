@@ -71,5 +71,4 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
   - Figure out how to handle the `resources` folder
   - Create GitHub release
   - Simplify installation instructions
-- Copy over a few VS Code settings, recommended extension, and spelling dictionary
 - Add screenshots/gifs
