@@ -51,12 +51,12 @@ It won't perfectly match the Windows theme.
 - UWP windows, such as Windows's Settings app, are not filtered out either.
   - ❌ They don't play well with any of the methods I've tried (`WinHide`, `WinSetExStyle`, `ITaskbarList.DeleteTab`).
 - When running on startup, an error may be thrown due to initializing `ITaskbarList` too early.
-  - ✅ Clicking "Reload Script" will fix this.
+  - ✅ Clicking "Reload Script" will fix this. I have a permanent fix planned.
 - In the app switcher:
-  - Some apps provide only a very high resolution icon, which is not scaled down. The correct size is used if available.
-  - Vertical alignment is a bit off.
-  - There's no acrylic blur effect. I tried to implement it (see `blurbehind.ahk` in git history), but couldn't get it to work.
-  - There's no way to close the app switcher without selecting an app.
+  - 📐Some apps provide only a very high resolution icon, which is not scaled down. The correct size is used if available.
+  - 📐Vertical alignment is a bit off.
+  - 🎨 There's no acrylic blur effect. I tried to implement it (see `blurbehind.ahk` in git history), but couldn't get it to work.
+  - ❌ There's no way to close the app switcher without selecting an app.
 	- Pressing <kbd>Esc</kbd> causes `Error: Gui has no window.`
 
 ## License
