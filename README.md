@@ -50,8 +50,6 @@ It won't perfectly match the Windows theme.
   - 🛡️✅ Running as administrator fixes this.
 - UWP windows, such as Windows's Settings app, are not filtered out either.
   - ❌ They don't play well with any of the methods I've tried (`WinHide`, `WinSetExStyle`, `ITaskbarList.DeleteTab`).
-- When running on startup, an error may be thrown due to initializing `ITaskbarList` too early.
-  - ✅ Clicking "Reload Script" will fix this. I have a permanent fix planned.
 - In the app switcher:
   - 📐Some apps provide only a very high resolution icon, which is not scaled down. The correct size is used if available.
   - 📐Vertical alignment is a bit off.
@@ -65,8 +63,6 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ## TODO
 
-- Fix error on startup about `ITaskbarList`
-  - Switch back to initializing `ITaskbarList` as-needed instead of up-front, but still only once
 - Compile the scripts into executables
   - Figure out how to handle the `resources` folder
   - Create GitHub release
