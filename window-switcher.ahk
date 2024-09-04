@@ -201,18 +201,6 @@ DescribeWindow(Window) {
 }
 
 ;--------------------------------------------------------
-; Win+Tab to switch between windows (TODO: between apps)
-;--------------------------------------------------------
-
-; #Tab::
-; {
-;   Send "{LAlt Down}{Tab}"
-;   KeyWait "LWin"  ; Wait to release left Win key
-;   Send "{LAlt Up}" ; Close switcher on hotkey release
-; }
-; return
-
-;--------------------------------------------------------
 ; AUTO RELOAD THIS SCRIPT
 ;--------------------------------------------------------
 ~^s:: {
