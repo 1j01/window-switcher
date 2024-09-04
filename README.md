@@ -24,6 +24,7 @@ It provides shortcuts found on many other operating systems, that are sorely mis
 
 Note: unlike the Window Switcher, the Application Switcher is a totally custom UI.
 It won't perfectly match the Windows theme.
+However, it can be *skinned* a bit, if you like.
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/)
 2. Download `app-switcher.ahk` and the `resources` folder.
@@ -56,6 +57,8 @@ It won't perfectly match the Windows theme.
   - 🎨 There's no acrylic blur effect. I tried to implement it (see `blurbehind.ahk` in git history), but couldn't get it to work.
   - ❌ There's no way to close the app switcher without selecting an app.
 	- Pressing <kbd>Esc</kbd> causes `Error: Gui has no window.`
+  - ✂️ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
+  - Can sometimes get an error `Error: Gui has no window.` at `Pic := AppSwitcher.FocusedCtrl`
 
 ## License
 
@@ -64,7 +67,12 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 ## TODO
 
 - Compile the scripts into executables
-  - Figure out how to handle the `resources` folder
+  - Figure out how to handle the resources needed for the app switcher (embed but allow them to be overridden with external files?)
   - Create GitHub release
   - Simplify installation instructions
 - Add screenshots/gifs
+
+## Development
+
+- The script will automatically reload if you press Ctrl+S on a window with the script's name in the title
+- The [VS Code extension for AutoHotkey v2](https://marketplace.visualstudio.com/items?itemName=thqby.vscode-autohotkey2-lsp) provides auto-formatting among many other features
