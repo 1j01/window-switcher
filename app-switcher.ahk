@@ -48,6 +48,17 @@ SS_NOPREFIX := 0x00000080
 ; }
 
 
+; https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+DWMWA_USE_HOSTBACKDROPBRUSH := 16
+DWMWA_SYSTEMBACKDROP_TYPE := 38
+; https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwm_systembackdrop_type
+DWMSBT_AUTO := 0
+DWMSBT_NONE := 1
+DWMSBT_MAINWINDOW := 2
+DWMSBT_TRANSIENTWINDOW := 3
+DWMSBT_TABBEDWINDOW := 4
+
+
 GetAppIconHandle(hwnd) {
 	iconHandle := 0
 	if (!iconHandle) {
@@ -122,7 +133,8 @@ ShowAppSwitcher(Apps) {
 	AppSwitcher.SetDarkTitle()  ; needed for dark window background apparently, even though there's no title bar
 	AppSwitcher.SetDarkMenu()  ; should be unnecessary
 
-	AppSwitcher.BackColor := 0x202020
+	; AppSwitcher.BackColor := 0x202020
+	AppSwitcher.BackColor := 0x000000
 
 	AppSwitcher.MarginX := 30
 	AppSwitcher.MarginY := 30
@@ -154,14 +166,17 @@ ShowAppSwitcher(Apps) {
 	; Enables rounded corners.
 	; Doesn't seem to hide the border if the window is already shown, but `-Border` takes care of that.
 	AppSwitcher.SetBorderless(6)
-	; Set Mica (Alt) background. (Supported starting with Windows 11 Build 22000.)
+	; Set blur-behind accent effect. (Supported starting with Windows 11 Build 22000.)
 	; Doesn't seem to work the first time. See workaround below.
 	if (VerCompare(A_OSVersion, "10.0.22600") >= 0) {
-		AppSwitcher.SetWindowAttribute(38, 4)
+		AppSwitcher.SetWindowAttribute(DWMWA_USE_HOSTBACKDROPBRUSH, true)  ; required for DWMSBT_TRANSIENTWINDOW
+		AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_TRANSIENTWINDOW)
+		; AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_TABBEDWINDOW)
+		; AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_MAINWINDOW)
 	}
 }
 
-; Workaround for mica blur-behind effect not working the first time the app switcher is shown.
+; Workaround for blur-behind accent effect not working the first time the app switcher is shown.
 ShowAppSwitcher([])
 AppSwitcher.Destroy()
 

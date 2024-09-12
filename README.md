@@ -23,7 +23,7 @@ It provides shortcuts found on many other operating systems, that are sorely mis
 ### Application Switcher
 
 Note: unlike the Window Switcher, the Application Switcher is a totally custom UI.
-However, it's designed to match the Windows 11 theme, and will use Mica blur-behind effect.
+However, it's designed to match the Windows 11 theme, and will use the acrylic blur-behind effect.
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/)
 2. Download `app-switcher.ahk` and `GuiEnhancerKit.ahk` and the `resources` folder.
