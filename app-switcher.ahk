@@ -23,7 +23,9 @@ GCL_STYLE := -26 ; Retrieves the window-class style bits.
 GCLP_WNDPROC := -24 ; Retrieves the address of the window procedure, or a handle representing the address of the window procedure. You must use the CallWindowProc function to call the window procedure.
 
 WS_CHILD := 0x40000000
-WS_THICKFRAME := 0x00040000
+; WS_THICKFRAME := 0x00040000
+; WS_POPUP := 0x80000000
+; WS_CLIPCHILDREN := 0x02000000
 
 WS_EX_APPWINDOW := 0x00040000
 WS_EX_TOOLWINDOW := 0x00000080
@@ -114,6 +116,8 @@ global FocusRingByHWND := Map()
 
 ShowAppSwitcher(Apps) {
 	global AppSwitcher := Gui()
+	AppSwitcher.MarginX := 10
+	AppSwitcher.MarginY := 10
 	for index, app in Apps {
 		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", "resources/app-border-inactive.png")
 		FocusRingByHWND[app.HWND] := FocusRing
@@ -136,8 +140,14 @@ ShowAppSwitcher(Apps) {
 		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, app.Title)
 	}
 	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
-	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption +Owner " WS_THICKFRAME)
+	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption -Border +Owner")
 	AppSwitcher.Show
+	; TODO: make the window corners round again
+	; I've removed the border, in order to fix vertical spacing (specically it looks like I was running into https://stackoverflow.com/questions/39731497/create-window-without-titlebar-with-resizable-border-and-without-bogus-6px-whit)
+	; but this also removed rounded corners.
+	; I could make the window fully skinnable with a 9-slice image, or I could try to use DWMWA_WINDOW_CORNER_PREFERENCE,
+	; or I could try to use https://github.com/nperovic/GuiEnhancerKit which also supposedly supports the "mica" blur-behind effect,
+	; which I wasn't able to get working myself.
 	; DwmSetWindowAttribute(AppSwitcher.Hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND, 4)  ; Assuming uint size is 4 bytes
 }
 
