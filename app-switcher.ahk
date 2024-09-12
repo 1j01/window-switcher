@@ -124,15 +124,6 @@ ShowAppSwitcher(Apps) {
 
 	AppSwitcher.BackColor := 0x202020
 
-	; Set Mica (Alt) background. (Supported starting with Windows 11 Build 22000.)
-	; Doesn't seem to work.
-	if (VerCompare(A_OSVersion, "10.0.22600") >= 0) {
-		AppSwitcher.SetWindowAttribute(38, 4)
-	}
-
-	; AppSwitcher.SetBorderless(6, (g, x, y) => false, 500, 500, 500, 500)
-	AppSwitcher.SetBorderless(6)
-
 	AppSwitcher.MarginX := 30
 	AppSwitcher.MarginY := 30
 	for index, app in Apps {
@@ -159,7 +150,21 @@ ShowAppSwitcher(Apps) {
 	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
 	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption -Border +Owner")
 	AppSwitcher.Show
+
+	; Enables rounded corners.
+	; Doesn't seem to hide the border if the window is already shown, but `-Border` takes care of that.
+	AppSwitcher.SetBorderless(6)
+	; Set Mica (Alt) background. (Supported starting with Windows 11 Build 22000.)
+	; Doesn't seem to work the first time. See workaround below.
+	if (VerCompare(A_OSVersion, "10.0.22600") >= 0) {
+		AppSwitcher.SetWindowAttribute(38, 4)
+	}
 }
+
+; Workaround for mica blur-behind effect not working the first time the app switcher is shown.
+ShowAppSwitcher([])
+AppSwitcher.Destroy()
+
 
 LastFocusHighlight := 0
 UpdateFocusHighlight() {

@@ -23,8 +23,7 @@ It provides shortcuts found on many other operating systems, that are sorely mis
 ### Application Switcher
 
 Note: unlike the Window Switcher, the Application Switcher is a totally custom UI.
-It won't perfectly match the Windows theme.
-However, it can be *skinned* a bit, if you like.
+However, it's designed to match the Windows 11 theme, and will use Mica blur-behind effect.
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/)
 2. Download `app-switcher.ahk` and `GuiEnhancerKit.ahk` and the `resources` folder.
@@ -54,7 +53,6 @@ However, it can be *skinned* a bit, if you like.
 - When running on startup, an error may be thrown due to initializing `ITaskbarList` too early.
   - ✅ Clicking "Reload Script" will fix this. I have a permanent fix planned.
 - In the app switcher:
-  - 🎨 The blur-behind effect doesn't work. I tried to implement it (see `blurbehind.ahk` in git history), but couldn't get it to work. (I'm now trying `GuiEnhancerKit.ahk`...)
   - ❌ There's no way to close the app switcher without selecting an app.
 	- Pressing <kbd>Esc</kbd> causes `Error: Gui has no window.`
   - ✂️ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
