@@ -1,4 +1,5 @@
 ; Requires AutoHotkey v2
+#Include "./GuiEnhancerKit.ahk"
 
 ;--------------------------------------------------------
 ; App Switcher
@@ -115,9 +116,25 @@ global FocusRingByHWND := Map()
 #MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
 
 ShowAppSwitcher(Apps) {
-	global AppSwitcher := Gui()
-	AppSwitcher.MarginX := 10
-	AppSwitcher.MarginY := 10
+	global AppSwitcher := GuiExt()
+
+	AppSwitcher.SetFont("cWhite s10", "Segoe UI")
+	AppSwitcher.SetDarkTitle()  ; needed for dark window background apparently, even though there's no title bar
+	AppSwitcher.SetDarkMenu()  ; should be unnecessary
+
+	AppSwitcher.BackColor := 0x202020
+
+	; Set Mica (Alt) background. (Supported starting with Windows 11 Build 22000.)
+	; Doesn't seem to work.
+	if (VerCompare(A_OSVersion, "10.0.22600") >= 0) {
+		AppSwitcher.SetWindowAttribute(38, 4)
+	}
+
+	; AppSwitcher.SetBorderless(6, (g, x, y) => false, 500, 500, 500, 500)
+	AppSwitcher.SetBorderless(6)
+
+	AppSwitcher.MarginX := 30
+	AppSwitcher.MarginY := 30
 	for index, app in Apps {
 		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", "resources/app-border-inactive.png")
 		FocusRingByHWND[app.HWND] := FocusRing
@@ -142,13 +159,6 @@ ShowAppSwitcher(Apps) {
 	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
 	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption -Border +Owner")
 	AppSwitcher.Show
-	; TODO: make the window corners round again
-	; I've removed the border, in order to fix vertical spacing (specically it looks like I was running into https://stackoverflow.com/questions/39731497/create-window-without-titlebar-with-resizable-border-and-without-bogus-6px-whit)
-	; but this also removed rounded corners.
-	; I could make the window fully skinnable with a 9-slice image, or I could try to use DWMWA_WINDOW_CORNER_PREFERENCE,
-	; or I could try to use https://github.com/nperovic/GuiEnhancerKit which also supposedly supports the "mica" blur-behind effect,
-	; which I wasn't able to get working myself.
-	; DwmSetWindowAttribute(AppSwitcher.Hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND, 4)  ; Assuming uint size is 4 bytes
 }
 
 LastFocusHighlight := 0

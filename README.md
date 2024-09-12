@@ -27,7 +27,7 @@ It won't perfectly match the Windows theme.
 However, it can be *skinned* a bit, if you like.
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/)
-2. Download `app-switcher.ahk` and the `resources` folder.
+2. Download `app-switcher.ahk` and `GuiEnhancerKit.ahk` and the `resources` folder.
    The easiest way is to [download the entire repository as a zip file](https://github.com/1j01/window-switcher/archive/refs/heads/main.zip).
 3. Set `app-switcher.ahk` to run on startup (see below)
 
@@ -54,7 +54,7 @@ However, it can be *skinned* a bit, if you like.
 - When running on startup, an error may be thrown due to initializing `ITaskbarList` too early.
   - ✅ Clicking "Reload Script" will fix this. I have a permanent fix planned.
 - In the app switcher:
-  - 🎨 Window corners aren't rounded, and there's no blur-behind effect. I tried to implement it (see `blurbehind.ahk` in git history), but couldn't get it to work.
+  - 🎨 The blur-behind effect doesn't work. I tried to implement it (see `blurbehind.ahk` in git history), but couldn't get it to work. (I'm now trying `GuiEnhancerKit.ahk`...)
   - ❌ There's no way to close the app switcher without selecting an app.
 	- Pressing <kbd>Esc</kbd> causes `Error: Gui has no window.`
   - ✂️ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
