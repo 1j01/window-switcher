@@ -118,14 +118,17 @@ ShowAppSwitcher(Apps) {
 		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", "resources/app-border-inactive.png")
 		FocusRingByHWND[app.HWND] := FocusRing
 		OuterSize := 128
-		IconSize := 32  ; TODO: get actual size of icon
+		; TODO: get actual size of icon, and allow smaller icons, but not larger than 32 since many programs have 32 as the largest icon size
+		; (at least available through WM_GETICON, where you can only request 16x16 or 32x32, so if they provide 32x32, that's what is returned)
+		; Or get icon from shortcut file, which could get bigger icons.
+		IconSize := 32
 		BorderSize := 15
 		TextWidth := OuterSize - 2 * BorderSize
 		Offset := (OuterSize - IconSize) / 2
 		TextY := (OuterSize + IconSize) / 2 + BorderSize
 		TextHeight := OuterSize - TextY - BorderSize
 		try {
-			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " Tabstop vPicForAppWithHWND" app.HWND, "HICON:*" app.Icon)
+			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " w32 h32 Tabstop vPicForAppWithHWND" app.HWND, "HICON:*" app.Icon)
 		} catch {
 			; Loading the icon can fail, but I don't know in what cases. It just says "Failed to add control"
 			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " w32 h32 Tabstop vPicForAppWithHWND" app.HWND, "resources/app-border-inactive.png")
