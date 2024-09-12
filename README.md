@@ -51,6 +51,8 @@ However, it can be *skinned* a bit, if you like.
   - 🛡️✅ Running as administrator fixes this.
 - UWP windows, such as Windows's Settings app, are not filtered out either.
   - ❌ They don't play well with any of the methods I've tried (`WinHide`, `WinSetExStyle`, `ITaskbarList.DeleteTab`).
+- When running on startup, an error may be thrown due to initializing `ITaskbarList` too early.
+  - ✅ Clicking "Reload Script" will fix this. I have a permanent fix planned.
 - In the app switcher:
   - 🎨 Window corners aren't rounded, and there's no blur-behind effect. I tried to implement it (see `blurbehind.ahk` in git history), but couldn't get it to work.
   - ❌ There's no way to close the app switcher without selecting an app.
@@ -64,6 +66,8 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ## TODO
 
+- Fix error on startup about `ITaskbarList`
+  - Switch back to initializing `ITaskbarList` as-needed instead of up-front, but still only once
 - Compile the scripts into executables
   - Figure out how to handle the resources needed for the app switcher (embed but allow them to be overridden with external files?)
   - Create GitHub release
