@@ -177,6 +177,7 @@ ShowAppSwitcher(Apps) {
 }
 
 ; Workaround for blur-behind accent effect not working the first time the app switcher is shown.
+; FIXME: the effect is still not reliably applied. This helps, but it doesn't get at the root cause.
 ShowAppSwitcher([])
 AppSwitcher.Destroy()
 
