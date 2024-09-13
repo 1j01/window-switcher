@@ -129,12 +129,14 @@ global FocusRingByHWND := Map()
 ShowAppSwitcher(Apps) {
 	global AppSwitcher := GuiExt()
 
-	AppSwitcher.SetFont("cWhite s10", "Segoe UI")
+	LightTheme := IsLightTheme()
+	CanUseBlurBehind := VerCompare(A_OSVersion, "10.0.22600") >= 0
+	AppSwitcher.SetFont((LightTheme ? "cBlack" : "cWhite") " s10", "Segoe UI")
 	AppSwitcher.SetDarkTitle()  ; needed for dark window background apparently, even though there's no title bar
 	AppSwitcher.SetDarkMenu()  ; should be unnecessary
 
 	; AppSwitcher.BackColor := 0x202020
-	AppSwitcher.BackColor := 0x000000
+	AppSwitcher.BackColor := ((LightTheme and not CanUseBlurBehind) ? 0xFFFFFF : 0x000000)
 
 	AppSwitcher.MarginX := 30
 	AppSwitcher.MarginY := 30
@@ -168,7 +170,7 @@ ShowAppSwitcher(Apps) {
 	AppSwitcher.SetBorderless(6)
 	; Set blur-behind accent effect. (Supported starting with Windows 11 Build 22000.)
 	; Doesn't seem to work the first time. See workaround below.
-	if (VerCompare(A_OSVersion, "10.0.22600") >= 0) {
+	if (CanUseBlurBehind) {
 		AppSwitcher.SetWindowAttribute(DWMWA_USE_HOSTBACKDROPBRUSH, true)  ; required for DWMSBT_TRANSIENTWINDOW
 		AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_TRANSIENTWINDOW)
 		; AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_TABBEDWINDOW)
@@ -180,6 +182,20 @@ ShowAppSwitcher(Apps) {
 ; FIXME: the effect is still not reliably applied. This helps, but it doesn't get at the root cause.
 ShowAppSwitcher([])
 AppSwitcher.Destroy()
+
+
+IsLightTheme() {
+	try {
+		; Read the AppsUseLightTheme registry value from the user's theme settings
+		themeValue := RegRead("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme")
+
+		; If the value is 1, it means the light theme is active, otherwise, it's the dark theme
+		return themeValue = 1
+	} catch {
+		; Handle any potential errors during registry read
+		throw Error("Error reading the registry value for AppsUseLightTheme.")
+	}
+}
 
 
 LastFocusHighlight := 0
