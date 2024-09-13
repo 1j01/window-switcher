@@ -178,6 +178,8 @@ ShowAppSwitcher(Apps) {
 
 ; Workaround for blur-behind accent effect not working the first time the app switcher is shown.
 ; FIXME: the effect is still not reliably applied. This helps, but it doesn't get at the root cause.
+; Hm, resizing a test window seems to make the effect work. Maybe I can trigger something like a resize event to make it work reliably.
+; Or many such events? Since it updates gradually? (Is it an animation, or is it updating only slightly at a given event?)
 ShowAppSwitcher([])
 AppSwitcher.Destroy()
 
