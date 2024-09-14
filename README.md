@@ -52,8 +52,6 @@ However, it's designed to match the Windows 11 theme, and will use the acrylic b
   - ❌ They don't play well with any of the methods I've tried (`WinHide`, `WinSetExStyle`, `ITaskbarList.DeleteTab`).
 - In the app switcher:
   - 🎨 The blur-behind effect doesn't always work. (Usually it works when triggering the app switcher a second time.)
-  - ❌ There's no way to close the app switcher without selecting an app.
-	- Pressing <kbd>Esc</kbd> causes `Error: Gui has no window.`
   - ✂️ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
   - Can sometimes get an error `Error: Gui has no window.` at `Pic := AppSwitcher.FocusedCtrl`
 

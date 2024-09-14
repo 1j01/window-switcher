@@ -159,7 +159,12 @@ ShowAppSwitcher(Apps) {
 		}
 		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, app.Title)
 	}
-	AppSwitcher.OnEvent("Escape", (*) => AppSwitcher.Destroy())
+	AppSwitcher.OnEvent("Escape", CloseAppSwitcher)
+	CloseAppSwitcher(*) {
+		global AppSwitcherOpen
+		AppSwitcher.Destroy()
+		AppSwitcherOpen := false
+	}
 	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption -Border +Owner")
 	AppSwitcher.Show
 
@@ -293,11 +298,14 @@ UpdateFocusHighlight() {
 	} else if GetKeyState("RWin") { ; just to be sure we don't wait forever in case the key was released quickly
 		KeyWait "RWin"
 	}
-	SelectedPic := AppSwitcher.FocusedCtrl
-	SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])
-	AppSwitcher.Destroy()
-	AppSwitcherOpen := false
-	WinActivate(SelectedHWND)
+	; It may be closed by Escape (normally it's still open)
+	if AppSwitcherOpen {
+		SelectedPic := AppSwitcher.FocusedCtrl
+		SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])
+		AppSwitcher.Destroy()
+		AppSwitcherOpen := false
+		WinActivate(SelectedHWND)
+	}
 }
 
 GroupIDCounter := 0
