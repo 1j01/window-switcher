@@ -46,7 +46,7 @@ ITaskbarList_VTable := {
 }
 ; Create the TaskbarList object.
 TaskbarList := ComObject(CLSID_TaskbarList, IID_ITaskbarList)
-ComCall(ITaskbarList_VTable.HrInit, TaskbarList)
+TaskbarListInitialized := False
 
 TempHiddenWindows := []
 ; OriginalExStyles := Map()
@@ -58,6 +58,7 @@ TempHiddenWindows := []
   FilteredWindowSwitcher()
 }
 FilteredWindowSwitcher() {
+  global TaskbarListInitialized, TempHiddenWindows
   if TempHiddenWindows.Length {
     ; Needs #MaxThreadsPerHotkey 2 to handle Alt+`+`+`... to tab through windows with `, while waiting for Alt to be released
     ; Needs {Blind} to handle Alt+Shift+` to go in reverse
@@ -117,6 +118,10 @@ FilteredWindowSwitcher() {
           ;   WinSetExStyle(ExStyle | WS_EX_TOOLWINDOW & ~WS_EX_APPWINDOW, Window)
           ; }
 
+          if (!TaskbarListInitialized) {
+            ComCall(ITaskbarList_VTable.HrInit, TaskbarList)
+            TaskbarListInitialized := True
+          }
           ComCall(ITaskbarList_VTable.DeleteTab, TaskbarList, "ptr", Window)
 
           TempHiddenWindows.Push(Window)

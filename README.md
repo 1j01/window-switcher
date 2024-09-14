@@ -50,8 +50,6 @@ However, it's designed to match the Windows 11 theme, and will use the acrylic b
   - 🛡️✅ Running as administrator fixes this.
 - UWP windows, such as Windows's Settings app, are not filtered out either.
   - ❌ They don't play well with any of the methods I've tried (`WinHide`, `WinSetExStyle`, `ITaskbarList.DeleteTab`).
-- When running on startup, an error may be thrown due to initializing `ITaskbarList` too early.
-  - ✅ Clicking "Reload Script" will fix this. I have a permanent fix planned.
 - In the app switcher:
   - 🎨 The blur-behind effect doesn't always work. (Usually it works when triggering the app switcher a second time.)
   - ❌ There's no way to close the app switcher without selecting an app.
@@ -65,8 +63,6 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ## TODO
 
-- Fix error on startup about `ITaskbarList`
-  - Switch back to initializing `ITaskbarList` as-needed instead of up-front, but still only once
 - Compile the scripts into executables
   - Figure out how to handle the resources needed for the app switcher (embed but allow them to be overridden with external files?)
   - Create GitHub release
