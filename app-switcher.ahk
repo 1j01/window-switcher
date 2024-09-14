@@ -1,5 +1,5 @@
 ; Requires AutoHotkey v2
-#Include "./GuiEnhancerKit.ahk"
+; #Include "./GuiEnhancerKit.ahk"
 
 ;--------------------------------------------------------
 ; App Switcher
@@ -19,12 +19,13 @@
 ; in a basic way, so variables and expressions are not supported for the Source parameter,
 ; and thus loops can't be used to install multiple files in a succinct way.
 
-ResourcesDir := A_Temp "/AppSwitcherResources/"
-if !FileExist(ResourcesDir) {
-	DirCreate(ResourcesDir)
-}
-FileInstall("resources/app-border-inactive.png", ResourcesDir "app-border-inactive.png", true)
-FileInstall("resources/app-border-active.png", ResourcesDir "app-border-active.png", true)
+ResourcesDir := A_ScriptDir "/resources/"
+; ResourcesDir := A_Temp "/AppSwitcherResources/"
+; if !FileExist(ResourcesDir) {
+; 	DirCreate(ResourcesDir)
+; }
+; FileInstall("resources/app-border-inactive.png", ResourcesDir "app-border-inactive.png", true)
+; FileInstall("resources/app-border-active.png", ResourcesDir "app-border-active.png", true)
 
 ;--------------------------------------------------------
 ; Windows API constants
@@ -156,14 +157,14 @@ global FocusRingByHWND := Map()
 ShowAppSwitcher(Apps) {
 	CloseAppSwitcher()  ; just in case - don't want to leave behind an old app switcher window
 
-	global AppSwitcher := GuiExt()
+	global AppSwitcher := Gui()
 
-	AppSwitcher.SetFont("cWhite s10", "Segoe UI")
-	AppSwitcher.SetDarkTitle()  ; needed for dark window background apparently, even though there's no title bar
-	AppSwitcher.SetDarkMenu()  ; should be unnecessary
+	; AppSwitcher.SetFont("cWhite s10", "Segoe UI")
+	; AppSwitcher.SetDarkTitle()  ; needed for dark window background apparently, even though there's no title bar
+	; AppSwitcher.SetDarkMenu()  ; should be unnecessary
 
 	; AppSwitcher.BackColor := 0x202020
-	AppSwitcher.BackColor := 0x000000
+	; AppSwitcher.BackColor := 0x000000
 
 	AppSwitcher.MarginX := 30
 	AppSwitcher.MarginY := 30
@@ -194,15 +195,15 @@ ShowAppSwitcher(Apps) {
 
 	; Enables rounded corners.
 	; Doesn't seem to hide the border if the window is already shown, but `-Border` takes care of that.
-	AppSwitcher.SetBorderless(6)
-	; Set blur-behind accent effect. (Supported starting with Windows 11 Build 22000.)
-	; Doesn't seem to work the first time. See workaround below.
-	if (VerCompare(A_OSVersion, "10.0.22600") >= 0) {
-		AppSwitcher.SetWindowAttribute(DWMWA_USE_HOSTBACKDROPBRUSH, true)  ; required for DWMSBT_TRANSIENTWINDOW
-		AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_TRANSIENTWINDOW)
-		; AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_TABBEDWINDOW)
-		; AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_MAINWINDOW)
-	}
+	; AppSwitcher.SetBorderless(6)
+	; ; Set blur-behind accent effect. (Supported starting with Windows 11 Build 22000.)
+	; ; Doesn't seem to work the first time. See workaround below.
+	; if (VerCompare(A_OSVersion, "10.0.22600") >= 0) {
+	; 	AppSwitcher.SetWindowAttribute(DWMWA_USE_HOSTBACKDROPBRUSH, true)  ; required for DWMSBT_TRANSIENTWINDOW
+	; 	AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_TRANSIENTWINDOW)
+	; 	; AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_TABBEDWINDOW)
+	; 	; AppSwitcher.SetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_MAINWINDOW)
+	; }
 }
 
 CloseAppSwitcher(*) {
@@ -317,7 +318,7 @@ UpdateFocusHighlight() {
 
 	; for ProcessPath, Window in TopWindowsByProcessPath {
 	for Window in TopWindows {
-		iconHandle := GetAppIconHandle(Window)
+		iconHandle := 0 ; GetAppIconHandle(Window)
 		if (iconHandle) {
 			ProcessPath := WinGetProcessPath(Window)  ; TODO: maybe optimize by storing this in the loop above
 			try {
@@ -328,7 +329,7 @@ UpdateFocusHighlight() {
 				Title := WinGetTitle(Window)
 			}
 			Apps.Push({
-				Icon: GetAppIconHandle(Window),
+				Icon: GetAppIconHandle(Window), ; wait why am i getting the icon again? i already got it above
 				Title: Title,
 				HWND: Window,
 			})
