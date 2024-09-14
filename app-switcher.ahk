@@ -193,10 +193,6 @@ CloseAppSwitcher()
 LastFocusHighlight := 0
 UpdateFocusHighlight() {
 	global LastFocusHighlight
-	; Normally `AppSwitcher.FocusedCtrl` exists at this point,
-	; but it may not exist if focus changes while the switcher is open
-	; such as by pressing Win+D to show the desktop,
-	; then pressing Tab while Win is still held down.
 	Pic := AppSwitcher.FocusedCtrl
 	if LastFocusHighlight {
 		try {
@@ -206,14 +202,10 @@ UpdateFocusHighlight() {
 		}
 	}
 	if !Pic {
-		; Focus the app switcher so that it will have a focused control again
-		; TODO: focus earlier so that it can cycle to the next app in this case? (with `Send "{Tab}"`)
-		WinActivate(AppSwitcher.HWND)
-		Pic := AppSwitcher.FocusedCtrl
-		if !Pic {
-			; Probably shouldn't happen, generally, but maybe it could lose focus immediately after being activated.
-			return
-		}
+		; Probably shouldn't happen, GENERALLY, with logic outside this function focusing the app switcher if it's not focused
+		; but maybe it could lose focus immediately after being focused with `WinActivate`,
+		; or immedaitely after showing the app switcher.
+		return
 	}
 	FocusRing := FocusRingByHWND[Integer(StrSplit(Pic.Name, "PicForAppWithHWND")[2])]
 	FocusRing.Value := "resources/app-border-active.png"
@@ -225,6 +217,17 @@ UpdateFocusHighlight() {
 	global AppSwitcherOpen
 	if AppSwitcherOpen {
 		; Cycle through apps in the app switcher
+		; This uses normal control tabbing behavior, so it requires the app switcher to be focused.
+
+		; Normally `AppSwitcher.FocusedCtrl` exists at this point,
+		; but it may not exist if focus changes while the switcher is open
+		; such as by pressing Win+D to show the desktop,
+		; then pressing Tab while Win is still held down.
+		if !AppSwitcher.FocusedCtrl {
+			; Focus the app switcher so that it will have a focused control again.
+			; Do this before sending Tab so that it still cycles even in this case.
+			WinActivate(AppSwitcher.HWND)
+		}
 		if GetKeyState("Shift") {
 			Send "+{Tab}"
 		} else {
