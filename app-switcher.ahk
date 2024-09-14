@@ -121,12 +121,13 @@ Switchable(Window) {
 }
 
 global AppSwitcher := 0
-global AppSwitcherOpen := false ; could use AppSwitcher, alternatively (TODO: try this simplification)
 global FocusRingByHWND := Map()
 
 #MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
 
 ShowAppSwitcher(Apps) {
+	CloseAppSwitcher()  ; just in case - don't want to leave behind an old app switcher window
+
 	global AppSwitcher := GuiExt()
 
 	AppSwitcher.SetFont("cWhite s10", "Segoe UI")
@@ -177,9 +178,12 @@ ShowAppSwitcher(Apps) {
 }
 
 CloseAppSwitcher(*) {
-	global AppSwitcherOpen, AppSwitcher
+	global AppSwitcher
+	if !AppSwitcher {
+		return
+	}
 	AppSwitcher.Destroy()
-	AppSwitcherOpen := false
+	AppSwitcher := 0
 }
 
 ; Workaround for blur-behind accent effect not working the first time the app switcher is shown.
@@ -214,8 +218,8 @@ UpdateFocusHighlight() {
 
 #Tab::
 +#Tab:: {
-	global AppSwitcherOpen
-	if AppSwitcherOpen {
+	global AppSwitcher
+	if AppSwitcher {
 		; Cycle through apps in the app switcher
 		; This uses normal control tabbing behavior, so it requires the app switcher to be focused.
 
@@ -303,7 +307,6 @@ UpdateFocusHighlight() {
 		}
 	}
 	ShowAppSwitcher(Apps)
-	AppSwitcherOpen := true
 	; Initially select the next app after the currently focused app when opening the switcher.
 	; (Otherwise you always have to press Tab twice to get to the next app.)
 	if GetKeyState("Shift") {
@@ -318,7 +321,7 @@ UpdateFocusHighlight() {
 		KeyWait "RWin"
 	}
 	; Normally the app switcher is still open at this point, but it may be closed by Escape.
-	if AppSwitcherOpen {
+	if AppSwitcher {
 		; Normally `AppSwitcher.FocusedCtrl` exists at this point,
 		; but it may not exist if focus changes while the switcher is open
 		; such as by pressing Win+D to show the desktop, then releasing Win.
