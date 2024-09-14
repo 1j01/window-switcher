@@ -193,12 +193,26 @@ CloseAppSwitcher()
 LastFocusHighlight := 0
 UpdateFocusHighlight() {
 	global LastFocusHighlight
+	; Normally `AppSwitcher.FocusedCtrl` exists at this point,
+	; but it may not exist if focus changes while the switcher is open
+	; such as by pressing Win+D to show the desktop,
+	; then pressing Tab while Win is still held down.
 	Pic := AppSwitcher.FocusedCtrl
 	if LastFocusHighlight {
 		try {
 			LastFocusHighlight.Value := "resources/app-border-inactive.png"
 		} catch {
 			; App switcher closed and destroyed the control
+		}
+	}
+	if !Pic {
+		; Focus the app switcher so that it will have a focused control again
+		; TODO: focus earlier so that it can cycle to the next app in this case? (with `Send "{Tab}"`)
+		WinActivate(AppSwitcher.HWND)
+		Pic := AppSwitcher.FocusedCtrl
+		if !Pic {
+			; Probably shouldn't happen, generally, but maybe it could lose focus immediately after being activated.
+			return
 		}
 	}
 	FocusRing := FocusRingByHWND[Integer(StrSplit(Pic.Name, "PicForAppWithHWND")[2])]
@@ -210,6 +224,7 @@ UpdateFocusHighlight() {
 +#Tab:: {
 	global AppSwitcherOpen
 	if AppSwitcherOpen {
+		; Cycle through apps in the app switcher
 		if GetKeyState("Shift") {
 			Send "+{Tab}"
 		} else {
@@ -299,12 +314,20 @@ UpdateFocusHighlight() {
 	} else if GetKeyState("RWin") { ; just to be sure we don't wait forever in case the key was released quickly
 		KeyWait "RWin"
 	}
-	; It may be closed by Escape (normally it's still open)
+	; Normally the app switcher is still open at this point, but it may be closed by Escape.
 	if AppSwitcherOpen {
+		; Normally `AppSwitcher.FocusedCtrl` exists at this point,
+		; but it may not exist if focus changes while the switcher is open
+		; such as by pressing Win+D to show the desktop, then releasing Win.
 		SelectedPic := AppSwitcher.FocusedCtrl
-		SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])
+		SelectedHWND := 0
+		if SelectedPic {
+			SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])
+		}
 		CloseAppSwitcher()
-		WinActivate(SelectedHWND)
+		if SelectedHWND {
+			WinActivate(SelectedHWND)
+		}
 	}
 }
 

@@ -58,9 +58,6 @@ App switcher:
   - 🙈 UWP apps are not shown in the app switcher.
   - Can sometimes get an error `Error: Gui has no window.` at `Pic := AppSwitcher.FocusedCtrl`
     - ❓ I don't know what caused this or if it's still a problem. If you run into this or any other issues, please let me know.
-  - Can get an error if you show the desktop with <kbd>Win+D</kbd> while the app switcher is open:
-    `Error: This value of type "String" has no property named "Name".`
-    at `SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])`
 
 ## License
 
