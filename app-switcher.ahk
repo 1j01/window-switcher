@@ -15,17 +15,16 @@
 ; `FileInstall` when compiled, copies the files from the EXE to the destination directory.
 ; `FileInstall` when not compiled, copies the files from the source directory to the destination directory.
 ; Thus in both cases the resources can be referenced by the same path.
+; When Ahk2Exe processes the script, it parses `FileInstall` commands
+; in a basic way, so variables and expressions are not supported for the Source parameter,
+; and thus loops can't be used to install multiple files in a succinct way.
 
-ResourcesSourceDir := A_ScriptDir "/resources/"
 ResourcesDir := A_Temp "/AppSwitcherResources/"
-ResourceNames := ["app-border-inactive.png", "app-border-active.png"]
 if !FileExist(ResourcesDir) {
 	DirCreate(ResourcesDir)
 }
-for Name in ResourceNames {
-	MsgBox(ResourcesSourceDir Name " -> " ResourcesDir Name " (exists: " FileExist(ResourcesSourceDir Name) ")")
-	FileInstall(ResourcesSourceDir Name, ResourcesDir Name, true)
-}
+FileInstall("resources/app-border-inactive.png", ResourcesDir "app-border-inactive.png", true)
+FileInstall("resources/app-border-active.png", ResourcesDir "app-border-active.png", true)
 
 ;--------------------------------------------------------
 ; Windows API constants
