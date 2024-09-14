@@ -121,7 +121,7 @@ Switchable(Window) {
 }
 
 global AppSwitcher := 0
-global AppSwitcherOpen := false ; could use AppSwitcher
+global AppSwitcherOpen := false ; could use AppSwitcher, alternatively (TODO: try this simplification)
 global FocusRingByHWND := Map()
 
 #MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
@@ -160,11 +160,6 @@ ShowAppSwitcher(Apps) {
 		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, app.Title)
 	}
 	AppSwitcher.OnEvent("Escape", CloseAppSwitcher)
-	CloseAppSwitcher(*) {
-		global AppSwitcherOpen
-		AppSwitcher.Destroy()
-		AppSwitcherOpen := false
-	}
 	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption -Border +Owner")
 	AppSwitcher.Show
 
@@ -181,12 +176,18 @@ ShowAppSwitcher(Apps) {
 	}
 }
 
+CloseAppSwitcher(*) {
+	global AppSwitcherOpen, AppSwitcher
+	AppSwitcher.Destroy()
+	AppSwitcherOpen := false
+}
+
 ; Workaround for blur-behind accent effect not working the first time the app switcher is shown.
 ; FIXME: the effect is still not reliably applied. This helps, but it doesn't get at the root cause.
 ; Hm, resizing a test window seems to make the effect work. Maybe I can trigger something like a resize event to make it work reliably.
 ; Or many such events? Since it updates gradually? (Is it an animation, or is it updating only slightly at a given event?)
 ShowAppSwitcher([])
-AppSwitcher.Destroy()
+CloseAppSwitcher()
 
 
 LastFocusHighlight := 0
@@ -302,8 +303,7 @@ UpdateFocusHighlight() {
 	if AppSwitcherOpen {
 		SelectedPic := AppSwitcher.FocusedCtrl
 		SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])
-		AppSwitcher.Destroy()
-		AppSwitcherOpen := false
+		CloseAppSwitcher()
 		WinActivate(SelectedHWND)
 	}
 }
