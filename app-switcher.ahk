@@ -210,8 +210,15 @@ CloseAppSwitcher(*) {
 	if !AppSwitcher {
 		return
 	}
-	AppSwitcher.Destroy()
+	; AppSwitcher.Destroy()
+	; AppSwitcher := 0
+
+	; Trying to avoid "Error: Gui has no window." in the compiled script...
+	; This might be safer with threading? This way the variable always
+	; references an existing window or is 0, right?
+	OldAppSwitcher := AppSwitcher
 	AppSwitcher := 0
+	OldAppSwitcher.Destroy()
 }
 
 ; Workaround for blur-behind accent effect not working the first time the app switcher is shown.
