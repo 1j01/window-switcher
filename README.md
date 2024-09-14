@@ -43,6 +43,7 @@ However, it's designed to match the Windows 11 theme, and will use the acrylic b
 
 ## Known Issues
 
+Window switcher:
 - Windows are hidden from the task bar as well, which can be distracting,
   especially with taskbar button labels enabled, as it animates the taskbar buttons collapsing and expanding.
   - ❌ I don't know of any way to hide windows from the task switcher without hiding them from the taskbar.
@@ -50,10 +51,16 @@ However, it's designed to match the Windows 11 theme, and will use the acrylic b
   - 🛡️✅ Running as administrator fixes this.
 - UWP windows, such as Windows's Settings app, are not filtered out either.
   - ❌ They don't play well with any of the methods I've tried (`WinHide`, `WinSetExStyle`, `ITaskbarList.DeleteTab`).
-- In the app switcher:
+
+App switcher:
   - 🎨 The blur-behind effect doesn't always work. (Usually it works when triggering the app switcher a second time.)
-  - ✂️ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
+  - ⿻ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
+  - 🙈 UWP apps are not shown in the app switcher.
   - Can sometimes get an error `Error: Gui has no window.` at `Pic := AppSwitcher.FocusedCtrl`
+    - ❓ I don't know what caused this or if it's still a problem. If you run into this or any other issues, please let me know.
+  - Can get an error if you show the desktop with <kbd>Win+D</kbd> while the app switcher is open:
+    `Error: This value of type "String" has no property named "Name".`
+    at `SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])`
 
 ## License
 
