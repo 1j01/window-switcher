@@ -4,6 +4,32 @@
 ;--------------------------------------------------------
 ; App Switcher
 ;--------------------------------------------------------
+; Press Win+Tab to cycle through open applications.
+; Press Shift+Win+Tab to cycle backwards.
+; Release Win to switch to the selected application.
+; Press Escape to close the app switcher.
+
+;--------------------------------------------------------
+; Handle resources for compiling to EXE
+;--------------------------------------------------------
+; `FileInstall` when compiled, copies the files from the EXE to the destination directory.
+; `FileInstall` when not compiled, copies the files from the source directory to the destination directory.
+; Thus in both cases the resources can be referenced by the same path.
+
+ResourcesSourceDir := A_ScriptDir "/resources/"
+ResourcesDir := A_Temp "/AppSwitcherResources/"
+ResourceNames := ["app-border-inactive.png", "app-border-active.png"]
+if !FileExist(ResourcesDir) {
+	DirCreate(ResourcesDir)
+}
+for Name in ResourceNames {
+	MsgBox(ResourcesSourceDir Name " -> " ResourcesDir Name " (exists: " FileExist(ResourcesSourceDir Name) ")")
+	FileInstall(ResourcesSourceDir Name, ResourcesDir Name, true)
+}
+
+;--------------------------------------------------------
+; Windows API constants
+;--------------------------------------------------------
 
 WM_GETICON := 0x007F
 
@@ -58,6 +84,7 @@ DWMSBT_MAINWINDOW := 2
 DWMSBT_TRANSIENTWINDOW := 3
 DWMSBT_TABBEDWINDOW := 4
 
+;--------------------------------------------------------
 
 GetAppIconHandle(hwnd) {
 	iconHandle := 0
@@ -120,6 +147,8 @@ Switchable(Window) {
 	return !(Style & WS_CHILD)
 }
 
+;--------------------------------------------------------
+
 global AppSwitcher := 0
 global FocusRingByHWND := Map()
 
@@ -140,7 +169,7 @@ ShowAppSwitcher(Apps) {
 	AppSwitcher.MarginX := 30
 	AppSwitcher.MarginY := 30
 	for index, app in Apps {
-		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", "resources/app-border-inactive.png")
+		FocusRing := AppSwitcher.Add("Pic", "yM w128 h128 Section", ResourcesDir "app-border-inactive.png")
 		FocusRingByHWND[app.HWND] := FocusRing
 		OuterSize := 128
 		; TODO: get actual size of icon, and allow smaller icons, but not larger than 32 since many programs have 32 as the largest icon size
@@ -156,7 +185,7 @@ ShowAppSwitcher(Apps) {
 			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " w32 h32 Tabstop vPicForAppWithHWND" app.HWND, "HICON:*" app.Icon)
 		} catch {
 			; Loading the icon can fail, but I don't know in what cases. It just says "Failed to add control"
-			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " w32 h32 Tabstop vPicForAppWithHWND" app.HWND, "resources/app-border-inactive.png")
+			AppSwitcher.Add("Pic", "ys+" Offset " xs+" Offset " w32 h32 Tabstop vPicForAppWithHWND" app.HWND, ResourcesDir "app-border-inactive.png")
 		}
 		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, app.Title)
 	}
@@ -200,7 +229,7 @@ UpdateFocusHighlight() {
 	Pic := AppSwitcher.FocusedCtrl
 	if LastFocusHighlight {
 		try {
-			LastFocusHighlight.Value := "resources/app-border-inactive.png"
+			LastFocusHighlight.Value := ResourcesDir "app-border-inactive.png"
 		} catch {
 			; App switcher closed and destroyed the control
 		}
@@ -212,7 +241,7 @@ UpdateFocusHighlight() {
 		return
 	}
 	FocusRing := FocusRingByHWND[Integer(StrSplit(Pic.Name, "PicForAppWithHWND")[2])]
-	FocusRing.Value := "resources/app-border-active.png"
+	FocusRing.Value := ResourcesDir "app-border-active.png"
 	LastFocusHighlight := FocusRing
 }
 
