@@ -6,24 +6,37 @@ It provides shortcuts found on many other operating systems, that are sorely mis
 
 ## Features
 
+### Window Switcher
+
+![Window Switcher screenshot](window-switcher-screenshot.png)
+
 - <kbd>Alt+`</kbd> to switch between windows of the same application
-- <kbd>Win+Tab</kbd> to switch between applications
 - <kbd>Shift</kbd> to cycle in reverse
+- <kbd>Escape</kbd> to cancel
 - ✨ Uses the native Windows window switching UI ✨
   - This means it looks and behaves exactly like the native window switcher
   - It will continue to match the Windows theme even if Microsoft overhauls their UI style
 
+### Application Switcher
+
+![App Switcher screenshot](app-switcher-screenshot.png)
+
+- <kbd>Win+Tab</kbd> to switch between applications
+- <kbd>Shift</kbd> to cycle in reverse
+- <kbd>Escape</kbd> to cancel
+- Custom UI, designed to match the Windows 11 theme
+  - Includes acrylic blur-behind effect
+  - Skinnable by editing images in the `resources` folder
+
 ## Installation
 
 ### Window Switcher
+
 1. Install [AutoHotkey v2](https://www.autohotkey.com/)
 2. Download [`window-switcher.ahk`](window-switcher.ahk)
 3. Set `window-switcher.ahk` to run on startup (see below)
 
 ### Application Switcher
-
-Note: unlike the Window Switcher, the Application Switcher is a totally custom UI.
-However, it's designed to match the Windows 11 theme, and will use the acrylic blur-behind effect.
 
 1. Install [AutoHotkey v2](https://www.autohotkey.com/)
 2. Download `app-switcher.ahk` and `GuiEnhancerKit.ahk` and the `resources` folder.
@@ -43,7 +56,8 @@ However, it's designed to match the Windows 11 theme, and will use the acrylic b
 
 ## Known Issues
 
-Window switcher:
+### Window Switcher
+
 - Windows are hidden from the task bar as well, which can be distracting,
   especially with taskbar button labels enabled, as it animates the taskbar buttons collapsing and expanding.
   - ❌ I don't know of any way to hide windows from the task switcher without hiding them from the taskbar.
@@ -52,12 +66,13 @@ Window switcher:
 - UWP windows, such as Windows's Settings app, are not filtered out either.
   - ❌ They don't play well with any of the methods I've tried (`WinHide`, `WinSetExStyle`, `ITaskbarList.DeleteTab`).
 
-App switcher:
-  - 🎨 The blur-behind effect doesn't always work. (Usually it works when triggering the app switcher a second time.)
-  - ⿻ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
-  - 🙈 UWP apps are not shown in the app switcher.
-  - Can sometimes get an error `Error: Gui has no window.` at `Pic := AppSwitcher.FocusedCtrl`
-    - ❓ I don't know what caused this or if it's still a problem. If you run into this or any other issues, please let me know.
+### Application Switcher
+
+- 🎨 The blur-behind effect doesn't always work. (Usually it works when triggering the app switcher a second time.)
+- ⿻ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
+- 🙈 UWP apps are not shown in the app switcher.
+- Can sometimes get an error `Error: Gui has no window.` at `Pic := AppSwitcher.FocusedCtrl`
+  - ❓ I don't know what caused this or if it's still a problem. If you run into this or any other issues, please let me know.
 
 ## License
 
@@ -69,7 +84,6 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
   - Figure out how to handle the resources needed for the app switcher (embed but allow them to be overridden with external files?)
   - Create GitHub release
   - Simplify installation instructions
-- Add screenshots/gifs
 
 ## Development
 
