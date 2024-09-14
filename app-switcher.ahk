@@ -428,7 +428,7 @@ DescribeWindow(Window) {
 FileGetVersionInfo_AW(PEFile := "", Fields := ["FileDescription"]) {
 	; Written by SKAN
 	; https://www.autohotkey.com/forum/viewtopic.php?t=64128       CD:24-Nov-2008 / LM:28-May-2010
-	; Updated for AHK v2 by 1j01                                   2024-02-12
+	; Updated for AHK v2 by 1j01                                   2024-02-12 / LM:2024-09-14
 	DLL := "Version\"
 	if !FVISize := DllCall(DLL "GetFileVersionInfoSizeW", "Str", PEFile, "UInt", 0) {
 		throw Error("Unable to retrieve size of file version information.")
@@ -439,7 +439,7 @@ FileGetVersionInfo_AW(PEFile := "", Fields := ["FileDescription"]) {
 	if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", "\VarFileInfo\Translation", "UInt*", &Translation, "UInt", 0) {
 		throw Error("Unable to retrieve file version translation information.")
 	}
-	TranslationHex := Buffer(16)
+	TranslationHex := Buffer(16 + 2)  ; 8 characters + null terminator in UTF-16
 	if !DllCall("wsprintf", "Ptr", TranslationHex, "Str", "%08X", "UInt", NumGet(Translation + 0, "UPtr"), "Cdecl") {
 		throw Error("Unable to format number as hexadecimal.")
 	}
