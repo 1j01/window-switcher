@@ -85,6 +85,64 @@ DWMSBT_TABBEDWINDOW := 4
 
 ;--------------------------------------------------------
 
+GetExeIconHandle(ExePath) {
+	return MI_ExtractIcon(ExePath, 1, 32)
+}
+
+MI_ExtractIcon(Filename, IconNumber, IconSize)
+{
+	; static ExtractIconEx
+	h_icon := 0
+	h_icon_small := 0
+
+
+	; LoadImage is not used..
+	; ..with exe/dll files because:
+	;   it only works with modules loaded by the current process,
+	;   it needs the resource ordinal (which is not the same as an icon index), and
+	; ..with ico files because:
+	;   it can only load the first icon (of size %IconSize%) from an .ico file.
+
+	; If possible, use PrivateExtractIcons, which supports any size of icon.
+	if (IconSize != 16 && IconSize != 32)
+	{
+		; if A_OSVersion in ["WIN_7", "WIN_XP", "WIN_VISTA", "WIN_2003", "WIN_2000"]
+		; TODO: what should really be done about versions?
+		; punting for now because of syntax error. I think this might've been a string comparison?
+		; if (VerCompare(A_OSVersion, "6.1") <= 0) { ; Windows 7 and earlier
+		; if (1) {
+		if (0) {
+			if DllCall("PrivateExtractIcons"
+				, "str", Filename, "int", IconNumber - 1, "int", IconSize, "int", IconSize
+				, "uint*", &h_icon, "uint*", 0, "uint", 1, "uint", 0, "int")
+			{
+				return h_icon
+			}
+		}
+	}
+	; Use ExtractIconEx, which only returns 16x16 or 32x32 icons.
+	if DllCall("shell32/ExtractIconEx", "str", Filename, "int", IconNumber - 1
+		, "uint*", &h_icon, "uint*", &h_icon_small, "uint", 1)
+	{
+		SmallIconSize := SysGet(49)  ; SM_CXSMICON
+
+		; Use the best-fit size; delete the other. Defaults to small icon.
+		if (IconSize <= SmallIconSize) {
+			DllCall("DestroyIcon", "uint", h_icon)
+			h_icon := h_icon_small
+		} else
+			DllCall("DestroyIcon", "uint", h_icon_small)
+
+		; I think PrivateExtractIcons resizes icons automatically,
+		; so resize icons returned by ExtractIconEx for consistency.
+		if (h_icon && IconSize)
+			h_icon := DllCall("CopyImage", "uint", h_icon, "uint", 1, "int", IconSize
+				, "int", IconSize, "uint", 4 | 8)
+	}
+
+	return h_icon ? h_icon : 0
+}
+
 GetAppIconHandle(hwnd) {
 	iconHandle := 0
 	if (!iconHandle) {
@@ -323,10 +381,15 @@ UpdateFocusHighlight() {
 	SortByRecency(TopWindows)
 
 	; for ProcessPath, Window in TopWindowsByProcessPath {
+	; A_Clipboard := ""
 	for Window in TopWindows {
-		iconHandle := GetAppIconHandle(Window)
+		; iconHandle := GetAppIconHandle(Window)
+		; A_Clipboard .= DescribeWindow(Window) "`niconHandle: " iconHandle "`n`n"
+		; GetAppIconHandle is failing on the compiled version for some apps...
+		; Instead, get the icon from the executable file.
+		ProcessPath := WinGetProcessPath(Window)  ; TODO: maybe optimize by storing this in the loop above
+		iconHandle := GetExeIconHandle(ProcessPath)
 		if (iconHandle) {
-			ProcessPath := WinGetProcessPath(Window)  ; TODO: maybe optimize by storing this in the loop above
 			try {
 				Info := FileGetVersionInfo_AW(ProcessPath, ["FileDescription", "ProductName"])
 				Title := Info["FileDescription"] ? Info["FileDescription"] : Info["ProductName"]
