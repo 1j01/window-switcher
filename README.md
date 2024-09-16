@@ -1,4 +1,4 @@
-# Window Switcher
+# Window Switcher + App Switcher
 
 This small utility augments the native window switching capabilities of Windows.
 
@@ -71,6 +71,7 @@ It provides shortcuts found on many other operating systems, that are sorely mis
 - 🎨 The blur-behind effect doesn't always work. (Usually it works when triggering the app switcher a second time.)
 - ⿻ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
 - 🙈 UWP apps are not shown in the app switcher.
+  - This is likely easier to solve than the issue with the window switcher, but Microsoft doesn't make it easy! They dropped the ball when it comes to compatibility when introducing UWP apps.
 - Can sometimes get an error `Error: Gui has no window.` at `Pic := AppSwitcher.FocusedCtrl`
   - ❓ I don't know what caused this or if it's still a problem. If you run into this or any other issues, please let me know.
 
@@ -80,10 +81,32 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ## TODO
 
+I want to simplify the installation process, and the best way to do that is to compile the scripts into executables.
+
+The window switcher works fine, but when compiling the app switcher, many issues showed up.
+
 - Compile the scripts into executables
   - Figure out how to handle the resources needed for the app switcher (embed but allow them to be overridden with external files?)
   - Create GitHub release
   - Simplify installation instructions
+
+- Fix app switcher issues when compiled
+  - [x] 🛠️ Figure out how to embed the resources needed for the app switcher
+  - [x] 🎞️ Fix memory issue with `wsprintf`
+  - [ ] 🙈 Not all apps are shown (e.g. Chrome, Firefox, and VS Code are missing)
+    - Apparently `WM_GETICON` is failing when compiled (returning `0`)
+      - I could work around this by allowing apps to be shown without icons, but that's pretty ugly
+      - I could also try to get the icon from the executable, but that's a bit more work
+      - Ideally I want to get the icon from the shortcut that launched the app, but that's even more work. The taskbar does it, so it's possible.
+        - [Is it possible to determine if another process/window was started using a shortcut?](https://stackoverflow.com/questions/38387860/determine-if-process-started-from-shortcut?rq=3)
+          - > Yes, but not easily.
+  - [ ] Script is sending Tab to itself recursively, triggering a warning message about many hotkeys being triggered in a period short time
+    - Do hotkeys work differently when compiled?? Is it maybe designed to avoid responding to hotkeys originating from `AutoHotkey.exe`?
+  - [ ] "Error: Gui has no window."
+    - Does multithreading work differently when compiled??
+    - Actually, this might be related to the Tab hotkey issue. That could explain why it's getting what appears like a timing issue. (Although I don't know for sure it's a timing issue.)
+    - I might have a fix for this (3414d66940d5c43ef88884ae5298457422800721)
+
 
 ## Development
 
