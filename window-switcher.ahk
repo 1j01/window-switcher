@@ -30,6 +30,19 @@
 
 TraySetIcon "shell32.dll", 99 ; overlapped windows icon - supposedly Icon ID 185 in IconsExtract, but I had to find it through trial and error in practice
 
+A_TrayMenu.Add()  ; Creates a separator line.
+A_TrayMenu.Add("Report Issue", MenuHandler)
+A_TrayMenu.Add("Project Homepage", MenuHandler)
+
+MenuHandler(ItemName, ItemPos, MyMenu) {
+  if ItemName = "Report Issue" {
+    Run("https://github.com/1j01/window-switcher/issues")
+  } else if ItemName = "Project Homepage" {
+    Run("https://github.com/1j01/window-switcher/?tab=readme-ov-file#window-switcher")
+  }
+}
+
+
 WS_EX_APPWINDOW := 0x00040000
 WS_EX_TOOLWINDOW := 0x00000080
 WS_CHILD := 0x40000000

@@ -147,6 +147,22 @@ Switchable(Window) {
 }
 
 ;--------------------------------------------------------
+; Tray Menu
+;--------------------------------------------------------
+
+A_TrayMenu.Add()  ; Creates a separator line.
+A_TrayMenu.Add("Report Issue", MenuHandler)
+A_TrayMenu.Add("Project Homepage", MenuHandler)
+
+MenuHandler(ItemName, ItemPos, MyMenu) {
+	if ItemName = "Report Issue" {
+		Run("https://github.com/1j01/window-switcher/issues")
+	} else if ItemName = "Project Homepage" {
+		Run("https://github.com/1j01/window-switcher/?tab=readme-ov-file#window-switcher")
+	}
+}
+
+;--------------------------------------------------------
 
 global AppSwitcher := 0
 global FocusRingByHWND := Map()
