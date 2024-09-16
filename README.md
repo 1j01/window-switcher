@@ -1,8 +1,11 @@
-# Window Switcher
+# Window Switcher + App Switcher
 
-This small utility augments the native window switching capabilities of Windows.
+Tired of juggling multiple windows and apps on Windows?
+Window Switcher and App Switcher are here to help. These two utilities add powerful shortcuts found in most operating systems (Ubuntu, macOS, etc.), but that are sorely missing from Windows.
 
-It provides shortcuts found on many other operating systems, that are sorely missing from Windows.
+Use **Window Switcher** to quickly flip between windows of the same app, and **App Switcher** to navigate between different apps.
+
+Each utility is lightning fast, compliments each other, and integrates smoothly with the look and feel of Windows.
 
 ## Features
 
@@ -22,6 +25,7 @@ It provides shortcuts found on many other operating systems, that are sorely mis
 ![App Switcher screenshot](app-switcher-screenshot.png)
 
 - <kbd>Win+Tab</kbd> to switch between applications
+  - Note: this replaces the Task View feature
 - <kbd>Shift</kbd> to cycle in reverse
 - <kbd>Escape</kbd> to cancel
 - Custom UI, designed to match the Windows 11 theme
@@ -71,6 +75,7 @@ It provides shortcuts found on many other operating systems, that are sorely mis
 - 🎨 The blur-behind effect doesn't always work. (Usually it works when triggering the app switcher a second time.)
 - ⿻ Apps are not distinguished by their shortcut, so for instance, PWAs installed with Chrome will be lumped in with "Google Chrome".
 - 🙈 UWP apps are not shown in the app switcher.
+  - This is likely easier to solve than the issue with the window switcher, but Microsoft doesn't make it easy! They frankly dropped the ball when it comes to compatibility when introducing UWP apps.
 - Can sometimes get an error `Error: Gui has no window.` at `Pic := AppSwitcher.FocusedCtrl`
   - ❓ I don't know what caused this or if it's still a problem. If you run into this or any other issues, please let me know.
 
@@ -80,10 +85,35 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ## TODO
 
-- Compile the scripts into executables
-  - Figure out how to handle the resources needed for the app switcher (embed but allow them to be overridden with external files?)
-  - Create GitHub release
-  - Simplify installation instructions
+I want to simplify the installation process, and the best way to do that is to compile the scripts into executables.
+
+The window switcher works fine, but when compiling the app switcher, many issues showed up.
+
+It's unfortunate, since the app switcher is the one that has dependencies that I want to bundle to simplify installation.
+
+- [ ] Get app switcher working when compiled into `app-switcher.exe`
+  - [x] Figure out how to embed the resources
+    - `FileInstall` is a nice built in mechanism for this.
+    - (Might want to support overriding resources by placing them in the same directory as the executable (or in a subdirectory alongside it), or via a config file...)
+  - [x] Fix app crashing, usually silently but occasionally showing an "critical error" message with very little information
+    - Narrowed it down to a memory issue with `wsprintf` where it would write a null terminator past the end of the buffer
+  - [ ] 🙈 Not all apps are shown (e.g. Chrome, Firefox, and VS Code are missing)
+    - Apparently `WM_GETICON` is failing when compiled (returning `0`)
+      - I could work around this by allowing apps to be shown without icons, but that's pretty ugly
+      - I could also try to get the icon from the executable, but that's a bit more work
+      - Ideally I want to get the icon from the shortcut that launched the app, but that's even more work. The taskbar does it, so it's possible.
+        - [Is it possible to determine if another process/window was started using a shortcut?](https://stackoverflow.com/questions/38387860/determine-if-process-started-from-shortcut?rq=3)
+          - > Yes, but not easily.
+  - [ ] Script is sending Tab to itself recursively, triggering a warning message about many hotkeys being triggered in a period short time
+    - Do hotkeys work differently when compiled?? Is it maybe designed to avoid responding to hotkeys originating from `AutoHotkey.exe`?
+  - [ ] "Error: Gui has no window."
+    - Does multithreading work differently when compiled??
+    - Actually, this might be related to the Tab hotkey issue. That could explain why it's getting what appears like a timing issue. (Although I don't know for sure it's a timing issue.)
+    - I might have a fix for this (3414d66940d5c43ef88884ae5298457422800721)
+- [ ] Create GitHub release
+- [ ] Simplify installation instructions
+- [ ] Customize tray icon for app switcher (window switcher already has an appropriate icon from shell32.dll, although it could be improved)
+
 
 ## Development
 
