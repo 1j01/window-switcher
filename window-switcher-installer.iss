@@ -81,13 +81,16 @@ Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Desc
 ;   https://stackoverflow.com/questions/12250151/how-to-add-a-scheduled-task-with-inno-setup
 ; - Dunno about quoting the parameters within the string within the parameters within the string within the parameters...
 ;   Double double quotes look wrong but I doubt single quotes will work?
-
+; For testing, this command can be run in admin command prompt (cmd.exe, not PowerShell or Git Bash):
+;   schtasks /Create /F /RL Highest /SC OnLogon /TR "\"C:\Program Files\AutoHotkey\v2\AutoHotkey.exe\" \"C:\Users\Isaiah\Projects\window-switcher\window-switcher.ahk\"" /TN "Run Window Switcher on logon"
+; Quoted:
+;   "/Create /F /RL Highest /SC OnLogon /TR ""\""C:\Program Files\AutoHotkey\v2\AutoHotkey.exe\"" \""C:\Users\Isaiah\Projects\window-switcher\window-switcher.ahk\"""" /TN ""Run Window Switcher on logon"""
 Filename: "schtasks"; \
-	Parameters: "/Create /F /RL highest /SC onlogon /TR ""'{app}\AutoHotkey.exe' ""{app}\window-switcher.ahk"""" /TN ""Run Window Switcher on logon"""; \
+	Parameters: "/Create /F /RL Highest /SC OnLogon /TR ""\""{app}\AutoHotkey.exe\"" \""{app}\window-switcher.ahk\"""" /TN ""Run Window Switcher on logon"""; \
 	Flags: runhidden; \
 	Components: window_switcher and run_at_logon
 Filename: "schtasks"; \
-	Parameters: "/Create /F /RL highest /SC onlogon /TR ""'{app}\AutoHotkey.exe' ""{app}\app-switcher.ahk"""" /TN ""Run App Switcher on logon"""; \
+	Parameters: "/Create /F /RL Highest /SC OnLogon /TR ""\""{app}\AutoHotkey.exe\"" \""{app}\app-switcher.ahk\"""" /TN ""Run App Switcher on logon"""; \
 	Flags: runhidden; \
 	Components: app_switcher and run_at_logon
 
