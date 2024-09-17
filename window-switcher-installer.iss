@@ -28,6 +28,10 @@ Name: "readme"; Description: "Readme File"; Types: full
 Name: "license"; Description: "License File"; Types: full custom; Flags: fixed
 
 [Files]
+; Should I include AutoHotkey.exe in the repository?
+; It's not version-controlled this way. But I for reference, I'm using AHK v2.0.11
+; If I included it, it feels like it could bloat the repository when updating it, but maybe that would be super infrequent.
+Source: "C:\Program Files\AutoHotkey\v2\AutoHotkey.exe"; DestDir: "{app}"; Components: window_switcher app_switcher
 Source: "window-switcher.ahk"; DestDir: "{app}"; Components: window_switcher
 Source: "app-switcher.ahk"; DestDir: "{app}"; Components: app_switcher
 Source: "GuiEnhancerKit.ahk"; DestDir: "{app}"; Components: app_switcher
@@ -37,8 +41,8 @@ Source: "resources\*"; DestDir: "{app}\resources"; Components: app_switcher
 Source: "README.md"; DestName: "README.txt"; DestDir: "{app}"; Components: readme; Flags: isreadme
 ; Source: "Readme.txt"; DestDir: "{app}"; Components: readme\en; Flags: isreadme
 ; Source: "Readme-German.txt"; DestName: "Liesmich.txt"; DestDir: "{app}"; Components: readme\de; Flags: isreadme
+; (Should the license really be a component?)
 Source: "LICENSE.txt"; DestDir: "{app}"; Components: license
-; Is there a better way to handle the license file? Should it not be a component?
 
 [Icons]
 ; This section defines shortcuts to open programs. I'm not sure if it really makes sense here.
