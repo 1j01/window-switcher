@@ -12,6 +12,7 @@ DefaultDirName={autopf}\Window Switcher
 DefaultGroupName=Window Switcher
 ; UninstallDisplayIcon={app}\MyProg.exe
 ; OutputDir=userdocs:Inno Setup Examples Output
+OutputBaseFilename=window-switcher-installer
 
 [Types]
 Name: "full"; Description: "Full installation"
