@@ -29,8 +29,11 @@ Name: "readme"; Description: "Readme File"; Types: full
 Name: "license"; Description: "License File"; Types: full custom; Flags: fixed
 
 [Tasks]
+; Don't really want icons tbh.
 ; Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"; Components: window_switcher app_switcher
 ; Name: "quicklaunchicon"; Description: "Create a &Quick Launch icon"; GroupDescription: "Additional icons:"; Components: window_switcher app_switcher; Flags: unchecked
+; Not using this task since it created a redundant checkbox.
+; Might want to figure out how to have just one checkbox instead of the two that show up from the Run section.
 ; Name: "runafterinstall"; Description: "Run after installation"; GroupDescription: "Other tasks:"; Flags: checkedonce
 
 [Files]
