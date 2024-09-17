@@ -80,6 +80,6 @@ Filename: "schtasks"; \
 	Components: app_switcher and run_at_logon
 
 [UninstallRun]
-Filename: "schtasks"; Parameters: "/Delete /F /TN ""Run Window Switcher on logon"""; Flags: runhidden
-Filename: "schtasks"; Parameters: "/Delete /F /TN ""Run App Switcher on logon"""; Flags: runhidden
+Filename: "schtasks"; Parameters: "/Delete /F /TN ""Run Window Switcher on logon"""; Flags: runhidden; Components: window_switcher and run_at_logon
+Filename: "schtasks"; Parameters: "/Delete /F /TN ""Run App Switcher on logon"""; Flags: runhidden; Components: app_switcher and run_at_logon
 
