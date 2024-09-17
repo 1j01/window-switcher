@@ -30,7 +30,7 @@ Name: "license"; Description: "License File"; Types: full custom; Flags: fixed
 [Tasks]
 ; Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"; Components: window_switcher app_switcher
 ; Name: "quicklaunchicon"; Description: "Create a &Quick Launch icon"; GroupDescription: "Additional icons:"; Components: window_switcher app_switcher; Flags: unchecked
-Name: "runafterinstall"; Description: "Run after installation"; GroupDescription: "Other tasks:"; Flags: checkedonce
+; Name: "runafterinstall"; Description: "Run after installation"; GroupDescription: "Other tasks:"; Flags: checkedonce
 
 [Files]
 ; Should I include AutoHotkey.exe in the repository?
@@ -67,8 +67,8 @@ Name: "{group}\Uninstall Window Switcher + App Switcher"; Filename: "{uninstalle
 ; Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "App Switcher"; ValueData: """{app}\AutoHotkey.exe"" ""{app}\app-switcher.ahk"""; Flags: uninsdeletevalue; Components: app_switcher run_at_logon
 
 [Run]
-Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Description: "Run Window Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: window_switcher; Tasks: runafterinstall
-Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Description: "Run App Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: app_switcher; Tasks: runafterinstall
+Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Description: "Run Window Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: window_switcher
+Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Description: "Run App Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: app_switcher
 Filename: "schtasks"; \
 	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\window-switcher.ahk"""" /TN ""Run window switcher on logon"""; \
 	Flags: runhidden; \
