@@ -73,13 +73,21 @@ Name: "{group}\Uninstall Window Switcher + App Switcher"; Filename: "{uninstalle
 [Run]
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Description: "Run Window Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: window_switcher
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Description: "Run App Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: app_switcher
-; Note the task name must be the same in the uninstall section.
+; Note: the task names MUST be the same in the uninstall section.
+; Quote notes:
+; - Inno Setup uses double double quotes ("") to denote a single double quote (") within a double-quoted string within the parameters.
+;   See: https://jrsoftware.org/ishelp/index.php?topic=params
+; - Single quotes around the path to the application recommended here:
+;   https://stackoverflow.com/questions/12250151/how-to-add-a-scheduled-task-with-inno-setup
+; - Dunno about quoting the parameters within the string within the parameters within the string within the parameters...
+;   Double double quotes look wrong but I doubt single quotes will work?
+
 Filename: "schtasks"; \
-	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\window-switcher.ahk"""" /TN ""Run Window Switcher on logon"""; \
+	Parameters: "/Create /F /RL highest /SC onlogon /TR ""'{app}\AutoHotkey.exe' ""{app}\window-switcher.ahk"""" /TN ""Run Window Switcher on logon"""; \
 	Flags: runhidden; \
 	Components: window_switcher and run_at_logon
 Filename: "schtasks"; \
-	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\app-switcher.ahk"""" /TN ""Run App Switcher on logon"""; \
+	Parameters: "/Create /F /RL highest /SC onlogon /TR ""'{app}\AutoHotkey.exe' ""{app}\app-switcher.ahk"""" /TN ""Run App Switcher on logon"""; \
 	Flags: runhidden; \
 	Components: app_switcher and run_at_logon
 
