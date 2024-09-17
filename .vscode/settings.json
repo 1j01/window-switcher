@@ -1,11 +1,23 @@
 {
+	// TODO: force tabs or spaces, dang it
+	// I kinda assumed since I set up formating on save that I had configured this,
+	// but I ended up with one script with each. I should probably change the shorter script to match the longer one.
 	"[ahk2]": {
 		"editor.formatOnSave": true,
 	},
 	"cSpell.words": [
+		"autopf",
 		"blurbehind",
+		"GETICON",
 		"gifs",
+		"Inno",
+		"iscustom",
+		"isreadme",
+		"Liesmich",
 		"Odhner",
-		"skinnable"
+		"skinnable",
+		"uninstallexe",
+		"userdocs",
+		"wsprintf"
 	]
 }
