@@ -8,6 +8,10 @@ AppSupportURL=https://github.com/1j01/window-switcher/issues
 AppUpdatesURL=https://github.com/1j01/window-switcher/releases
 AppReadmeFile=https://github.com/1j01/window-switcher/blob/main/README.md
 WizardStyle=modern
+WizardImageFile=resources\window-switcher-installer-side-image.bmp
+WizardSmallImageFile=resources\window-switcher-icon-128x128.bmp
+WizardImageAlphaFormat=premultiplied
+
 DefaultDirName={autopf}\Window Switcher
 DefaultGroupName=Window Switcher
 ; UninstallDisplayIcon={app}\MyProg.exe
