@@ -70,10 +70,11 @@ Name: "{group}\Uninstall Window Switcher + App Switcher"; Filename: "{uninstalle
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Description: "Run Window Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: window_switcher
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Description: "Run App Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: app_switcher
 Filename: "schtasks"; \
-	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\window-switcher.ahk"""" /TN ""Run window switcher on logon"""; \
+	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\window-switcher.ahk"""" /TN ""Run Window Switcher on logon"""; \
 	Flags: runhidden; \
 	Components: window_switcher
 Filename: "schtasks"; \
-	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\app-switcher.ahk"""" /TN ""Run app as admin on logon"""; \
+	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\app-switcher.ahk"""" /TN ""Run App Switcher on logon"""; \
 	Flags: runhidden; \
 	Components: app_switcher
+
