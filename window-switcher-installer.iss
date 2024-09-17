@@ -27,6 +27,11 @@ Name: "readme"; Description: "Readme File"; Types: full
 ; Name: "readme\de"; Description: "German"; Flags: exclusive
 Name: "license"; Description: "License File"; Types: full custom; Flags: fixed
 
+[Tasks]
+; Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"; Components: window_switcher app_switcher
+; Name: "quicklaunchicon"; Description: "Create a &Quick Launch icon"; GroupDescription: "Additional icons:"; Components: window_switcher app_switcher; Flags: unchecked
+Name: "runafterinstall"; Description: "Run after installation"; GroupDescription: "Other tasks:"; Flags: checkedonce
+
 [Files]
 ; Should I include AutoHotkey.exe in the repository?
 ; It's not version-controlled this way. But I for reference, I'm using AHK v2.0.11
@@ -52,3 +57,23 @@ Source: "LICENSE.txt"; DestDir: "{app}"; Components: license
 Name: "{group}\Window Switcher"; Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""
 Name: "{group}\App Switcher"; Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""
 Name: "{group}\Uninstall Window Switcher + App Switcher"; Filename: "{uninstallexe}"
+; Name: "{autodesktop}\Window Switcher"; Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Tasks: desktopicon; Components: window_switcher
+; Name: "{autodesktop}\App Switcher"; Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Tasks: desktopicon; Components: app_switcher
+; Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Window Switcher"; Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Tasks: quicklaunchicon; Components: window_switcher
+; Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\App Switcher"; Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Tasks: quicklaunchicon; Components: app_switcher
+
+; [Registry]
+; Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "Window Switcher"; ValueData: """{app}\AutoHotkey.exe"" ""{app}\window-switcher.ahk"""; Flags: uninsdeletevalue; Components: window_switcher run_at_logon
+; Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "App Switcher"; ValueData: """{app}\AutoHotkey.exe"" ""{app}\app-switcher.ahk"""; Flags: uninsdeletevalue; Components: app_switcher run_at_logon
+
+[Run]
+Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Description: "Run Window Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: window_switcher; Tasks: runafterinstall
+Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Description: "Run App Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: app_switcher; Tasks: runafterinstall
+Filename: "schtasks"; \
+	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\window-switcher.ahk"""" /TN ""Run window switcher on logon"""; \
+	Flags: runhidden; \
+	Components: window_switcher
+Filename: "schtasks"; \
+	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\app-switcher.ahk"""" /TN ""Run app as admin on logon"""; \
+	Flags: runhidden; \
+	Components: app_switcher
