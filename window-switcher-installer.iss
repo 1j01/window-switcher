@@ -72,11 +72,11 @@ Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Desc
 Filename: "schtasks"; \
 	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\window-switcher.ahk"""" /TN ""Run Window Switcher on logon"""; \
 	Flags: runhidden; \
-	Components: window_switcher
+	Components: window_switcher and run_at_logon
 Filename: "schtasks"; \
 	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\app-switcher.ahk"""" /TN ""Run App Switcher on logon"""; \
 	Flags: runhidden; \
-	Components: app_switcher
+	Components: app_switcher and run_at_logon
 
 [UninstallRun]
 Filename: "schtasks"; Parameters: "/Delete /F /TN ""Run Window Switcher on logon"""; Flags: runhidden
