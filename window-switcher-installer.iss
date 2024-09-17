@@ -1,0 +1,43 @@
+; This is an Inno Setup script to install Window Switcher and App Switcher.
+[Setup]
+AppName=Window Switcher
+AppVersion=1.0
+WizardStyle=modern
+DefaultDirName={autopf}\Window Switcher
+DefaultGroupName=Window Switcher
+; UninstallDisplayIcon={app}\MyProg.exe
+; OutputDir=userdocs:Inno Setup Examples Output
+
+[Types]
+Name: "full"; Description: "Full installation"
+Name: "custom"; Description: "Custom installation"; Flags: iscustom
+
+[Components]
+Name: "window-switcher"; Description: "Window Switcher"; Types: full custom
+Name: "app-switcher"; Description: "App Switcher"; Types: full custom
+Name: "run-at-logon"; Description: "Run at logon"; Types: full custom
+; Name: "help"; Description: "Help File"; Types: full
+Name: "readme"; Description: "Readme File"; Types: full
+; Name: "readme\en"; Description: "English"; Flags: exclusive
+; Name: "readme\de"; Description: "German"; Flags: exclusive
+Name: "license"; Description: "License File"; Types: full custom; Flags: fixed
+
+[Files]
+Source: "window-switcher.ahk"; DestDir: "{app}"; Components: window-switcher
+Source: "app-switcher.ahk"; DestDir: "{app}"; Components: app-switcher
+Source: "GuiEnhancerKit.ahk"; DestDir: "{app}"; Components: app-switcher
+Source: "resources\*"; DestDir: "{app}\resources"; Components: app-switcher
+; Source: "MyProg.chm"; DestDir: "{app}"; Components: help
+Source: "README.md"; DestDir: "{app}"; Components: readme; Flags: isreadme
+; Source: "Readme.txt"; DestDir: "{app}"; Components: readme\en; Flags: isreadme
+; Source: "Readme-German.txt"; DestName: "Liesmich.txt"; DestDir: "{app}"; Components: readme\de; Flags: isreadme
+Source: "LICENSE"; DestDir: "{app}"; Components: license; Flags: isreadme
+; Is there a better way to handle the license file? Should it not be a component?
+
+[Icons]
+; This section defines shortcuts to open programs. I'm not sure if it really makes sense here.
+; I mean I do have the run-at-logon as an option, but idk why you'd want to have to run it manually.
+; Could specify the icon with IconFilename and IconIndex.
+; Not sure about triple quotes.
+Name: "{group}\Window Switcher"; Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""
+Name: "{group}\App Switcher"; Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""
