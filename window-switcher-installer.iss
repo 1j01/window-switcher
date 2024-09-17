@@ -74,17 +74,22 @@ Name: "{group}\Uninstall Window Switcher + App Switcher"; Filename: "{uninstalle
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Description: "Run Window Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: window_switcher
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Description: "Run App Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: app_switcher
 ; Note: the task names MUST be the same in the uninstall section.
-; Quote notes:
+; Quoting notes:
 ; - Inno Setup uses double double quotes ("") to denote a single double quote (") within a double-quoted string within the parameters.
 ;   See: https://jrsoftware.org/ishelp/index.php?topic=params
-; - Single quotes around the path to the application recommended here:
+; - Single quotes around the path to the application are recommended here:
 ;   https://stackoverflow.com/questions/12250151/how-to-add-a-scheduled-task-with-inno-setup
-; - Dunno about quoting the parameters within the string within the parameters within the string within the parameters...
-;   Double double quotes look wrong but I doubt single quotes will work?
+;   but they give an example only of unquoted parameters,
+;   and I feel like single quotes won't work there?
+; - I managed to get it working with double quotes escaped with backslahes,
+;   by building the command to run in cmd.exe and then doubling the quotes,
+;   and wrapping it in quotes, and substituting concrete paths with substitutions.
 ; For testing, this command can be run in admin command prompt (cmd.exe, not PowerShell or Git Bash):
 ;   schtasks /Create /F /RL Highest /SC OnLogon /TR "\"C:\Program Files\AutoHotkey\v2\AutoHotkey.exe\" \"C:\Users\Isaiah\Projects\window-switcher\window-switcher.ahk\"" /TN "Run Window Switcher on logon"
 ; Quoted:
 ;   "/Create /F /RL Highest /SC OnLogon /TR ""\""C:\Program Files\AutoHotkey\v2\AutoHotkey.exe\"" \""C:\Users\Isaiah\Projects\window-switcher\window-switcher.ahk\"""" /TN ""Run Window Switcher on logon"""
+; It's kind of insane. But at least it only has to run on one operating system.
+; (In at least one project, I've ended up with octuple backslashes, for real. And it only worked on some operating systems due to redundant backslashes being ignored, since it was interpreted differently across OSes.)
 Filename: "schtasks"; \
 	Parameters: "/Create /F /RL Highest /SC OnLogon /TR ""\""{app}\AutoHotkey.exe\"" \""{app}\window-switcher.ahk\"""" /TN ""Run Window Switcher on logon"""; \
 	Flags: runhidden; \
