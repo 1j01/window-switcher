@@ -462,11 +462,7 @@ FileGetVersionInfo_AW(PEFile := "", Fields := ["FileDescription"]) {
 	if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", "\VarFileInfo\Translation", "UInt*", &Translation, "UInt", 0) {
 		throw Error("Unable to retrieve file version translation information.")
 	}
-	TranslationHex := Buffer(16 + 2)  ; 8 characters + null terminator in UTF-16
-	if !DllCall("wsprintf", "Ptr", TranslationHex, "Str", "%08X", "UInt", NumGet(Translation + 0, "UPtr"), "Cdecl") {
-		throw Error("Unable to format number as hexadecimal.")
-	}
-	TranslationHex := StrGet(TranslationHex, , "UTF-16")
+	TranslationHex := Format("{:08X}", NumGet(Translation, "UInt"))
 	TranslationCode := SubStr(TranslationHex, -4) SubStr(TranslationHex, 1, 4)
 	PropertiesMap := Map()
 	for Field in Fields {
