@@ -69,6 +69,7 @@ Name: "{group}\Uninstall Window Switcher + App Switcher"; Filename: "{uninstalle
 [Run]
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Description: "Run Window Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: window_switcher
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Description: "Run App Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: app_switcher
+; Note the task name must be the same in the uninstall section.
 Filename: "schtasks"; \
 	Parameters: "/Create /F /RL highest /SC onlogon /TR ""{app}\AutoHotkey.exe"" ""{app}\window-switcher.ahk"""" /TN ""Run Window Switcher on logon"""; \
 	Flags: runhidden; \
