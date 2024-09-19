@@ -2,6 +2,7 @@
 [Setup]
 AppName=Window Switcher
 AppVersion=1.0
+VersionInfoVersion=1.0
 AppPublisher=Isaiah Odhner
 AppPublisherURL=https://github.com/1j01
 AppSupportURL=https://github.com/1j01/window-switcher/issues
