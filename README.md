@@ -123,8 +123,8 @@ It's unfortunate, since the app switcher is the one that has dependencies that I
 
 To cut a release:
 
-1. Update the version number in `window-switcher-installer.iss`
-2. Run `window-switcher-installer.iss` to create the installer
+1. Update the version number in `window-switcher-setup.iss`
+2. Open `window-switcher-setup.iss` with Inno Setup Compiler and compile the installer
 3. Tag the commit and push the tag
 4. Upload the installer to the release assets
 
