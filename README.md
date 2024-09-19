@@ -119,3 +119,12 @@ It's unfortunate, since the app switcher is the one that has dependencies that I
 
 - The script will automatically reload if you press Ctrl+S on a window with the script's name in the title
 - The [VS Code extension for AutoHotkey v2](https://marketplace.visualstudio.com/items?itemName=thqby.vscode-autohotkey2-lsp) provides auto-formatting among many other features
+- The [Inno Setup Compiler](https://jrsoftware.org/isinfo.php) is used to create the installer
+
+To cut a release:
+
+1. Update the version number in `window-switcher-installer.iss`
+2. Run `window-switcher-installer.iss` to create the installer
+3. Tag the commit and push the tag
+4. Upload the installer to the release assets
+
