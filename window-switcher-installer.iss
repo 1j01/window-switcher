@@ -89,6 +89,9 @@ Name: "{group}\Uninstall Window Switcher + App Switcher"; Filename: "{uninstalle
 ; Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "App Switcher"; ValueData: """{app}\AutoHotkey.exe"" ""{app}\app-switcher.ahk"""; Flags: uninsdeletevalue; Components: app_switcher run_at_logon
 
 [Run]
+; Note: if I sign the executable, it might work with a lower permission level,
+; in which case I could change `runascurrentuser` to `runasoriginaluser`,
+; and replace `schtasks` with [Registry] entries. (The registry doesn't support running programs as admin.)
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\window-switcher.ahk"""; Description: "Run Window Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: window_switcher
 Filename: "{app}\AutoHotkey.exe"; Parameters: """{app}\app-switcher.ahk"""; Description: "Run App Switcher"; Flags: nowait postinstall skipifsilent runascurrentuser; Components: app_switcher
 ; Note: the task names MUST be the same in the uninstall section.
