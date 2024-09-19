@@ -44,8 +44,9 @@ Name: "license"; Description: "License File"; Types: full custom; Flags: fixed
 
 [Files]
 ; Should I include AutoHotkey.exe in the repository?
-; It's not version-controlled this way. But I for reference, I'm using AHK v2.0.11
+; It's not version-controlled this way. But for reference, I'm using AHK v2.0.11
 ; If I included it, it feels like it could bloat the repository when updating it, but maybe that would be super infrequent.
+; Actually, "v2" is in the path, so it won't copy the wrong major version, which is nice. This is probably good enough.
 Source: "C:\Program Files\AutoHotkey\v2\AutoHotkey.exe"; DestDir: "{app}"; Components: window_switcher app_switcher
 Source: "window-switcher.ahk"; DestDir: "{app}"; Components: window_switcher
 Source: "app-switcher.ahk"; DestDir: "{app}"; Components: app_switcher
