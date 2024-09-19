@@ -20,6 +20,17 @@ DefaultGroupName=Window Switcher
 ; UninstallDisplayIcon={app}\MyProg.exe
 ; OutputDir=userdocs:Inno Setup Examples Output
 OutputBaseFilename=window-switcher-setup
+; Requiring users to accept to the MIT license feels a bit overkill
+; considering how permissive the license is... two extra clicks...
+; but I don't know. Personally I kind of like seeing permissive licenses in installers.
+; It's a nice change of pace to be able to say "hell yeah I agree to that shit"
+; but really it would be nicer to have a no-interaction install experience like with Squirrel.Windows,
+; and then a settings window to enable/disable the app switcher or window switcher.
+; For now we're going old school.
+; By the way, does the license need to be specified in the [Files] + [Components] sections?
+; I should at least be able to remove it from the [Components] section:
+; "An entry without a Components parameter is always processed, unless other parameters say it shouldn't be."
+LicenseFile=LICENSE.txt
 
 [Types]
 Name: "full"; Description: "Full installation"
@@ -58,7 +69,6 @@ Source: "resources\*"; DestDir: "{app}\resources"; Components: app_switcher
 Source: "README.md"; DestName: "README.txt"; DestDir: "{app}"; Components: readme; Flags: isreadme
 ; Source: "Readme.txt"; DestDir: "{app}"; Components: readme\en; Flags: isreadme
 ; Source: "Readme-German.txt"; DestName: "Liesmich.txt"; DestDir: "{app}"; Components: readme\de; Flags: isreadme
-; (Should the license really be a component?)
 Source: "LICENSE.txt"; DestDir: "{app}"; Components: license
 
 [Icons]
