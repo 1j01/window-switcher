@@ -14,7 +14,6 @@ WizardStyle=modern
 WizardImageFile=resources\window-switcher-installer-side-image.bmp
 WizardSmallImageFile=resources\window-switcher-icon-128x128.bmp
 WizardImageAlphaFormat=premultiplied
-
 DefaultDirName={autopf}\Window Switcher
 DefaultGroupName=Window Switcher
 ; UninstallDisplayIcon={app}\MyProg.exe
