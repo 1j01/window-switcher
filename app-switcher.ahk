@@ -270,7 +270,12 @@ UpdateFocusHighlight() {
 #Tab::
 +#Tab:: {
 	global AppSwitcher
-	if AppSwitcher {
+	if AppSwitcher and not WinExist(AppSwitcher.HWND) {
+		; This is an edge case as far as I can tell, but without this,
+		; the app switcher can get left in a state where it thinks its open but it's not or whatever?
+		CloseAppSwitcher()
+		; Don't return. Continue to open it again to minimize disruption of whatever this case is.
+	} else if AppSwitcher {
 		; Cycle through apps in the app switcher
 		; This uses normal control tabbing behavior, so it requires the app switcher to be focused.
 
