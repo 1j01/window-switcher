@@ -26,6 +26,7 @@ Each utility is lightning fast, compliments each other, and integrates smoothly 
 
 - <kbd>Win+Tab</kbd> to switch between applications
   - Note: this replaces the Task View feature
+- <kbd>Win</kbd> + <kbd>Arrow Keys</kbd> also cycle through applications
 - <kbd>Shift</kbd> to cycle in reverse
 - <kbd>Escape</kbd> to cancel
 - Custom UI, designed to match the Windows 11 theme

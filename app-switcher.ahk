@@ -267,28 +267,31 @@ UpdateFocusHighlight() {
 	LastFocusHighlight := FocusRing
 }
 
+CycleAppSwitcher(Reverse := false) {
+	global AppSwitcher
+	; Cycle through apps in the app switcher.
+	; This uses normal control tabbing behavior, so it requires the app switcher to be focused.
+	if AppSwitcher && !AppSwitcher.FocusedCtrl {
+		; Focus the app switcher so that it will have a focused control again.
+		; Do this before sending Tab so that it still cycles even in this case.
+		WinActivate(AppSwitcher.HWND)
+	}
+	if Reverse {
+		Send "+{Tab}"
+	} else {
+		Send "{Tab}"
+	}
+	UpdateFocusHighlight()
+}
+
 #Tab::
 +#Tab:: {
-	global AppSwitcher
 	if AppSwitcher {
-		; Cycle through apps in the app switcher
-		; This uses normal control tabbing behavior, so it requires the app switcher to be focused.
-
 		; Normally `AppSwitcher.FocusedCtrl` exists at this point,
 		; but it may not exist if focus changes while the switcher is open
 		; such as by pressing Win+D to show the desktop,
 		; then pressing Tab while Win is still held down.
-		if !AppSwitcher.FocusedCtrl {
-			; Focus the app switcher so that it will have a focused control again.
-			; Do this before sending Tab so that it still cycles even in this case.
-			WinActivate(AppSwitcher.HWND)
-		}
-		if GetKeyState("Shift") {
-			Send "+{Tab}"
-		} else {
-			Send "{Tab}"
-		}
-		UpdateFocusHighlight()
+		CycleAppSwitcher(GetKeyState("Shift"))
 		return
 	}
 	; TODO: get app names from shortcut files like task bar seems to? or from task bar somehow?
@@ -387,6 +390,27 @@ UpdateFocusHighlight() {
 		}
 	}
 }
+
+
+#HotIf AppSwitcher
+#Up::
+#Left::
+#+Up::
+#+Left:: {
+	if AppSwitcher {
+		CycleAppSwitcher(true)
+	}
+}
+
+#Down::
+#Right::
+#+Down::
+#+Right:: {
+	if AppSwitcher {
+		CycleAppSwitcher(false)
+	}
+}
+#HotIf
 
 GroupIDCounter := 0
 Topmost(Windows) {
