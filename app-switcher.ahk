@@ -1,13 +1,22 @@
 ; Requires AutoHotkey v2
 #Include "./GuiEnhancerKit.ahk"
+#Include "./logical-app.ahk"
 
 ;--------------------------------------------------------
 ; App Switcher
 ;--------------------------------------------------------
-; Press Win+Tab to cycle through open applications.
-; Press Shift+Win+Tab to cycle backwards.
-; Release Win to switch to the selected application.
+; Press Alt+Tab to cycle through open applications.
+; Press Shift+Alt+Tab to cycle backwards.
+; Release Alt to switch to the selected application.
 ; Press Escape to close the app switcher.
+;
+; This replaces Windows' own Alt+Tab. Use Alt+` (window-switcher.ahk) to switch
+; between the windows of whichever application is currently active.
+;
+; One entry is shown per *logical application* -- not per window, and not per process.
+; Ten Chrome windows are one entry, while installed PWAs such as Google Chat and
+; Google Meet get their own entries even though they all run under chrome.exe.
+; See logical-app.ahk for how that identity, and each app's name and icon, are found.
 
 ;--------------------------------------------------------
 ; Handle resources for compiling to EXE
@@ -29,32 +38,8 @@ FileInstall("resources/app-border-active.png", ResourcesDir "app-border-active.p
 ;--------------------------------------------------------
 ; Windows API constants
 ;--------------------------------------------------------
-
-WM_GETICON := 0x007F
-
-ICON_BIG := 1
-ICON_SMALL := 0
-ICON_SMALL2 := 2
-
-GCW_ATOM := -32 ; Retrieves an ATOM value that uniquely identifies the window class. This is the same atom that the RegisterClassEx function returns.
-GCL_CBCLSEXTRA := -20 ; Retrieves the size, in bytes, of the extra memory associated with the class.
-GCL_CBWNDEXTRA := -18 ; Retrieves the size, in bytes, of the extra window memory associated with each window in the class. For information on how to access this memory, see GetWindowLongPtr.
-GCLP_HBRBACKGROUND := -10 ; Retrieves a handle to the background brush associated with the class.
-GCLP_HCURSOR := -12 ; Retrieves a handle to the cursor associated with the class.
-GCLP_HICON := -14 ; Retrieves a handle to the icon associated with the class.
-GCLP_HICONSM := -34 ; Retrieves a handle to the small icon associated with the class.
-GCLP_HMODULE := -16 ; Retrieves a handle to the module that registered the class.
-GCLP_MENUNAME := -8 ; Retrieves the pointer to the menu name string. The string identifies the menu resource associated with the class.
-GCL_STYLE := -26 ; Retrieves the window-class style bits.
-GCLP_WNDPROC := -24 ; Retrieves the address of the window procedure, or a handle representing the address of the window procedure. You must use the CallWindowProc function to call the window procedure.
-
-WS_CHILD := 0x40000000
-; WS_THICKFRAME := 0x00040000
-; WS_POPUP := 0x80000000
-; WS_CLIPCHILDREN := 0x02000000
-
-WS_EX_APPWINDOW := 0x00040000
-WS_EX_TOOLWINDOW := 0x00000080
+; Note: window style, icon and app model constants live in logical-app.ahk,
+; alongside the functions that use them.
 
 SS_WORDELLIPSIS := 0x0000C000
 SS_NOPREFIX := 0x00000080
@@ -84,69 +69,6 @@ DWMSBT_TRANSIENTWINDOW := 3
 DWMSBT_TABBEDWINDOW := 4
 
 ;--------------------------------------------------------
-
-GetAppIconHandle(hwnd) {
-	iconHandle := 0
-	if (!iconHandle) {
-		try {
-			iconHandle := SendMessage(WM_GETICON, ICON_BIG, 0, , hwnd)
-		} catch {
-		}
-	}
-	if (!iconHandle) {
-		try {
-			iconHandle := SendMessage(WM_GETICON, ICON_SMALL2, 0, , hwnd)
-		} catch {
-		}
-	}
-	if (!iconHandle) {
-		try {
-			iconHandle := SendMessage(WM_GETICON, ICON_SMALL, 0, , hwnd)
-		} catch {
-		}
-	}
-	if (!iconHandle) {
-		try {
-			iconHandle := GetClassLongPtrA(hwnd, GCLP_HICON)
-		} catch {
-		}
-	}
-	if (!iconHandle) {
-		try {
-			iconHandle := GetClassLongPtrA(hwnd, GCLP_HICONSM)
-		} catch {
-		}
-	}
-	if (!iconHandle) {
-		try {
-			return 0
-		} catch {
-		}
-	}
-
-	return iconHandle
-}
-
-GetClassLongPtrA(hwnd, nIndex) {
-	return DllCall("GetClassLongPtrA", "Ptr", hwnd, "int", nIndex, "Ptr")
-}
-
-Switchable(Window) {
-	; Heuristics determine if a window is in the taskbar
-	; https://stackoverflow.com/a/2262791
-	; TODO: priority of conditions (I couldn't find a definitive source, but someone gives an order in one of the answers)
-	ExStyle := WinGetExStyle(Window)
-	if ExStyle & WS_EX_TOOLWINDOW {
-		return false
-	}
-	if ExStyle & WS_EX_APPWINDOW {
-		return true
-	}
-	Style := WinGetStyle(Window)
-	return !(Style & WS_CHILD)
-}
-
-;--------------------------------------------------------
 ; Tray Menu
 ;--------------------------------------------------------
 
@@ -166,6 +88,11 @@ MenuHandler(ItemName, ItemPos, MyMenu) {
 
 global AppSwitcher := 0
 global FocusRingByHWND := Map()
+
+; Build the AUMID-to-shortcut index that names and illustrates PWAs ahead of time, so
+; that the first Alt+Tab isn't the one that waits for it. (A negative period means
+; "run once", and the delay keeps it out of the way of startup.)
+SetTimer(PrimeAppShortcutIndex, -3000)
 
 #MaxThreadsPerHotkey 2 ; Needed to handle tabbing through apps while the switcher is open
 
@@ -267,9 +194,21 @@ UpdateFocusHighlight() {
 	LastFocusHighlight := FocusRing
 }
 
-#Tab::
-+#Tab:: {
+; The `$` prefix forces these to be implemented with the keyboard hook, which is what
+; makes it possible to take Alt+Tab away from Windows at all -- and it's also what makes
+; them ignore the synthetic Alt+Tab that window-switcher.ahk sends to open the *native*
+; task switcher. See the coordination notes in logical-app.ahk.
+$!Tab::
+$!+Tab:: {
 	global AppSwitcher
+	if IsNativeSwitcherSessionActive() {
+		; The same-app window switcher currently has the native task switcher open.
+		; Pass Tab through so that it cycles through that, instead of opening this
+		; switcher on top of it. Sent at the default send level, so this doesn't come
+		; straight back to this hotkey.
+		Send "{Blind}{Tab}"
+		return
+	}
 	if AppSwitcher {
 		; Cycle through apps in the app switcher
 		; This uses normal control tabbing behavior, so it requires the app switcher to be focused.
@@ -291,68 +230,51 @@ UpdateFocusHighlight() {
 		UpdateFocusHighlight()
 		return
 	}
-	; TODO: get app names from shortcut files like task bar seems to? or from task bar somehow?
-	; Right now Chrome apps show up as Google Chrome, unseparated from browser windows, unlike on the task bar.
-	; If you right click on the taskbar button, it shows the Chrome app's name, and if you right click on that and click "Properties"
-	; you can see shortcut information. In the General tab, the Location will be something like
-	; `C:\Users\Isaiah\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar` or
-	; `C:\Users\Isaiah\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Chrome Apps`
-	; depending on whether the app is pinned to the task bar or not.
+	; Group windows by logical application rather than by process path, so that Chrome
+	; and each of its installed PWAs are separate entries, while all of Chrome's own
+	; windows collapse into one. GetLogicalAppId prefers the window's AUMID (which is
+	; what the taskbar groups by) and falls back to the process path.
+	ClearLogicalAppCache()
 
 	AllWindows := WinGetList()
-	WindowsByProcessPath := Map()
-	TopWindowsByProcessPath := Map()
-	; ProcessPathByWindow := Map()  ; optimization
-	ProcessPaths := []
-	Apps := []
+	WindowsByAppId := Map()
 	for Window in AllWindows {
-		if !Switchable(Window) {
+		AppId := ""
+		try {
+			if Switchable(Window) {
+				AppId := GetLogicalAppId(Window)
+			}
+		} catch {
+			; The window may have been destroyed while we were enumerating.
+		}
+		if (AppId = "") {
 			continue
 		}
-		ProcessPath := WinGetProcessPath(Window)
-		; Note: this can have duplicates.
-		; There's no Set type or easy way to check for existence in an array, or uniquify an array,
-		; so it's a bit of a pain, but it shouldn't cause problems for now.
-		; Easiest fix would be to use the existing Map and extract keys.
-		ProcessPaths.Push(ProcessPath)
-
-		if !WindowsByProcessPath.Has(ProcessPath) {
-			WindowsByProcessPath[ProcessPath] := []
+		if !WindowsByAppId.Has(AppId) {
+			WindowsByAppId[AppId] := []
 		}
-		WindowsByProcessPath[ProcessPath].Push(Window)
-	}
-	for ProcessPath in ProcessPaths {
-		; First approach fails to find a window for File Explorer.
-		; try {
-		; 	Window := WinGetID("ahk_exe " ProcessPath)
-		; } catch TargetError {
-		; 	continue
-		; }
-		; This approach is more reliable, as it uses the specific window IDs we found earlier.
-		Window := Topmost(WindowsByProcessPath[ProcessPath])
-		TopWindowsByProcessPath[ProcessPath] := Window
+		WindowsByAppId[AppId].Push(Window)
 	}
 	TopWindows := []
-	for _, Window in TopWindowsByProcessPath {
-		TopWindows.Push(Window)
+	for AppId, WindowsOfApp in WindowsByAppId {
+		; Represent each application with its topmost window.
+		; (Using the specific window IDs found above, rather than `WinGetID("ahk_exe ...")`,
+		; which fails to find a window for File Explorer.)
+		try {
+			TopWindows.Push(Topmost(WindowsOfApp))
+		} catch {
+			continue
+		}
 	}
 	SortByRecency(TopWindows)
 
-	; for ProcessPath, Window in TopWindowsByProcessPath {
+	Apps := []
 	for Window in TopWindows {
-		iconHandle := GetAppIconHandle(Window)
-		if (iconHandle) {
-			ProcessPath := WinGetProcessPath(Window)  ; TODO: maybe optimize by storing this in the loop above
-			try {
-				Info := FileGetVersionInfo_AW(ProcessPath, ["FileDescription", "ProductName"])
-				Title := Info["FileDescription"] ? Info["FileDescription"] : Info["ProductName"]
-				; Title := Info["ProductName"] ? Info["ProductName"] : Info["FileDescription"]
-			} catch {
-				Title := WinGetTitle(Window)
-			}
+		IconHandle := GetLogicalAppIconHandle(Window)
+		if (IconHandle) {
 			Apps.Push({
-				Icon: GetAppIconHandle(Window),
-				Title: Title,
+				Icon: IconHandle,
+				Title: GetLogicalAppDisplayName(Window),
 				HWND: Window,
 			})
 		}
@@ -366,10 +288,15 @@ UpdateFocusHighlight() {
 		Send "{Tab}"
 	}
 	UpdateFocusHighlight()
-	if GetKeyState("LWin") {
-		KeyWait "LWin"
-	} else if GetKeyState("RWin") { ; just to be sure we don't wait forever in case the key was released quickly
-		KeyWait "RWin"
+	; Wait for Alt to be released, which is what commits the selection.
+	; "P" (the physical state) is what KeyWait uses by default anyway, but it's stated
+	; explicitly here because it matters: `Send` above temporarily lifts whichever
+	; modifier the user is holding so that it can send a bare Tab, so the *logical* Alt
+	; state briefly looks released while tabbing through the switcher.
+	if GetKeyState("LAlt", "P") {
+		KeyWait "LAlt", "P"
+	} else if GetKeyState("RAlt", "P") { ; just to be sure we don't wait forever in case the key was released quickly
+		KeyWait "RAlt", "P"
 	}
 	; Normally the app switcher is still open at this point, but it may be closed by Escape.
 	if AppSwitcher {
@@ -403,7 +330,16 @@ SortByRecency(Windows) {
 	; Sort the windows by z-index, which essentially maps to recency.
 	; By comparing subsets of the list, we can order the whole list.
 	SortArray(Windows, (A, B) =>
-		Topmost([A, B]) == A ? -1 : 1)
+		TopmostOfTwo(A, B) == A ? -1 : 1)
+}
+TopmostOfTwo(A, B) {
+	; `Topmost` throws if neither window exists any more, e.g. if one was closed
+	; while the switcher was being built.
+	try {
+		return Topmost([A, B])
+	} catch {
+		return A
+	}
 }
 
 SortArray(Array, ComparisonFunction) {
@@ -440,47 +376,6 @@ SortArray(Array, ComparisonFunction) {
 ; 	Str .= "]"
 ; 	return Str
 ; }
-
-DescribeWindow(Window) {
-	try {
-		return "Window Title: " WinGetTitle(Window) "`nWindow Class: " WinGetClass(Window) "`nProcess Path: " WinGetProcessPath(Window)
-	} catch TargetError {
-		return "Nonexistent window"
-	}
-}
-FileGetVersionInfo_AW(PEFile := "", Fields := ["FileDescription"]) {
-	; Written by SKAN
-	; https://www.autohotkey.com/forum/viewtopic.php?t=64128       CD:24-Nov-2008 / LM:28-May-2010
-	; Updated for AHK v2 by 1j01                                   2024-02-12 / LM:2024-09-14
-	DLL := "Version\"
-	if !FVISize := DllCall(DLL "GetFileVersionInfoSizeW", "Str", PEFile, "UInt", 0) {
-		throw Error("Unable to retrieve size of file version information.")
-	}
-	FVI := Buffer(FVISize, 0)
-	Translation := 0
-	DllCall(DLL "GetFileVersionInfoW", "Str", PEFile, "Int", 0, "UInt", FVISize, "Ptr", FVI)
-	if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", "\VarFileInfo\Translation", "UInt*", &Translation, "UInt", 0) {
-		throw Error("Unable to retrieve file version translation information.")
-	}
-	TranslationHex := Buffer(16 + 2)  ; 8 characters + null terminator in UTF-16
-	if !DllCall("wsprintf", "Ptr", TranslationHex, "Str", "%08X", "UInt", NumGet(Translation + 0, "UPtr"), "Cdecl") {
-		throw Error("Unable to format number as hexadecimal.")
-	}
-	TranslationHex := StrGet(TranslationHex, , "UTF-16")
-	TranslationCode := SubStr(TranslationHex, -4) SubStr(TranslationHex, 1, 4)
-	PropertiesMap := Map()
-	for Field in Fields {
-		SubBlock := "\StringFileInfo\" TranslationCode "\" Field
-		InfoPtr := 0
-		if !DllCall(DLL "VerQueryValueW", "Ptr", FVI, "Str", SubBlock, "UIntP", &InfoPtr, "UInt", 0) {
-			continue
-		}
-		Value := DllCall("MulDiv", "UInt", InfoPtr, "Int", 1, "Int", 1, "Str")
-		PropertiesMap[Field] := Value
-	}
-	return PropertiesMap
-}
-
 
 ;--------------------------------------------------------
 ; AUTO RELOAD THIS SCRIPT
