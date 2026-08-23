@@ -207,7 +207,7 @@ It's unfortunate, since the app switcher is the one that has dependencies that I
     - I might have a fix for this (3414d66940d5c43ef88884ae5298457422800721)
 - [ ] Create GitHub release
 - [ ] Simplify installation instructions
-- [ ] Customize tray icon for app switcher (window switcher already has an appropriate icon from shell32.dll, although it could be improved)
+- [ ] Customize tray icons (both scripts currently use AutoHotkey's default icon; any custom icon should still read as an AutoHotkey script)
 
 
 ## Development
