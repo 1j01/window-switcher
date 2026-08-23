@@ -87,6 +87,9 @@ MenuHandler(ItemName, ItemPos, MyMenu) {
 ;--------------------------------------------------------
 
 global AppSwitcher := 0
+; Set by the Escape hotkey (and the Gui's Escape event) so that releasing Alt afterwards
+; commits nothing. Reset for each new switcher session in `ShowAppSwitcher`.
+global AppSwitcherCancelled := false
 global FocusRingByHWND := Map()
 
 ; Build the AUMID-to-shortcut index that names and illustrates PWAs ahead of time, so
@@ -99,6 +102,7 @@ SetTimer(PrimeAppShortcutIndex, -3000)
 ShowAppSwitcher(Apps) {
 	CloseAppSwitcher()  ; just in case - don't want to leave behind an old app switcher window
 
+	global AppSwitcherCancelled := false  ; a fresh session starts out uncancelled
 	global AppSwitcher := GuiExt()
 
 	AppSwitcher.SetFont("cWhite s10", "Segoe UI")
@@ -131,7 +135,9 @@ ShowAppSwitcher(Apps) {
 		}
 		AppSwitcher.Add("Text", "w" TextWidth " h" TextHeight " xs+" BorderSize " ys+" TextY " center " SS_WORDELLIPSIS " " SS_NOPREFIX, app.Title)
 	}
-	AppSwitcher.OnEvent("Escape", CloseAppSwitcher)
+	; Belt and braces: this only fires if Escape actually reaches the Gui, which it doesn't
+	; while Alt is held (see the Escape hotkey below), i.e. essentially never in practice.
+	AppSwitcher.OnEvent("Escape", CancelAppSwitcher)
 	AppSwitcher.Opt("+AlwaysOnTop -SysMenu -Caption -Border +Owner")
 	AppSwitcher.Show
 
@@ -162,6 +168,38 @@ CloseAppSwitcher(*) {
 	OldAppSwitcher := AppSwitcher
 	AppSwitcher := 0
 	OldAppSwitcher.Destroy()
+}
+
+; Cancel: dismiss the switcher without acting on the highlighted app.
+; `CloseAppSwitcher` is only the teardown; this is what makes it a *cancellation*, marking the
+; session so that the pending Alt release in the hotkey thread commits nothing.
+CancelAppSwitcher(*) {
+	global AppSwitcherCancelled := true
+	CloseAppSwitcher()
+}
+
+; Confirm: activate whatever is highlighted, then dismiss the switcher.
+; This is the only path that activates an application.
+ConfirmAppSwitcher() {
+	global AppSwitcher, AppSwitcherCancelled
+	; Don't commit a cancelled session. Also don't commit a switcher that's already gone, which
+	; happens when a newer Alt+Tab session has opened and closed one in the meantime; between
+	; them, a stale hotkey thread can never activate anything.
+	if (!AppSwitcher || AppSwitcherCancelled) {
+		return
+	}
+	; Normally `AppSwitcher.FocusedCtrl` exists at this point,
+	; but it may not exist if focus changes while the switcher is open
+	; such as by pressing Win+D to show the desktop, then releasing Win.
+	SelectedPic := AppSwitcher.FocusedCtrl
+	SelectedHWND := 0
+	if SelectedPic {
+		SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])
+	}
+	CloseAppSwitcher()
+	if SelectedHWND {
+		WinActivate(SelectedHWND)
+	}
 }
 
 ; Workaround for blur-behind accent effect not working the first time the app switcher is shown.
@@ -298,22 +336,25 @@ $!+Tab:: {
 	} else if GetKeyState("RAlt", "P") { ; just to be sure we don't wait forever in case the key was released quickly
 		KeyWait "RAlt", "P"
 	}
-	; Normally the app switcher is still open at this point, but it may be closed by Escape.
-	if AppSwitcher {
-		; Normally `AppSwitcher.FocusedCtrl` exists at this point,
-		; but it may not exist if focus changes while the switcher is open
-		; such as by pressing Win+D to show the desktop, then releasing Win.
-		SelectedPic := AppSwitcher.FocusedCtrl
-		SelectedHWND := 0
-		if SelectedPic {
-			SelectedHWND := Integer(StrSplit(SelectedPic.Name, "PicForAppWithHWND")[2])
-		}
-		CloseAppSwitcher()
-		if SelectedHWND {
-			WinActivate(SelectedHWND)
-		}
-	}
+	; Releasing Alt is what confirms the selection. The switcher is normally still open at this
+	; point, but it may have been cancelled with Escape, in which case this does nothing.
+	ConfirmAppSwitcher()
 }
+
+; Escape cancels the app switcher, and nothing else.
+; The `$` prefix forces this to be implemented with the keyboard hook, which is what lets it
+; take the keystroke away from Windows. Without it, Alt+Esc -- and Escape is only ever pressed
+; with Alt held here, since holding Alt is what keeps the switcher open -- is swallowed by the
+; OS as its own "activate the next window in the z-order" shortcut, which switches apps behind
+; our back and stops the Gui's Escape event from ever firing.
+; `*` matches whatever modifiers are held (Alt, plus Shift when cycling backwards).
+; The Alt release is deliberately not consumed: the `KeyWait` above still returns as usual,
+; it just finds the session cancelled and commits nothing.
+#HotIf AppSwitcher
+$*Escape:: {
+	CancelAppSwitcher()
+}
+#HotIf
 
 GroupIDCounter := 0
 Topmost(Windows) {
