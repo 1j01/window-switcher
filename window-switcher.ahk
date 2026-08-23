@@ -34,8 +34,6 @@
 
 #MaxThreadsPerHotkey 2
 
-TraySetIcon "shell32.dll", 99 ; overlapped windows icon - supposedly Icon ID 185 in IconsExtract, but I had to find it through trial and error in practice
-
 A_TrayMenu.Add()  ; Creates a separator line.
 A_TrayMenu.Add("Report Issue", MenuHandler)
 A_TrayMenu.Add("Project Homepage", MenuHandler)
